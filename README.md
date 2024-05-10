@@ -32,7 +32,7 @@ local helm_mappings = {
 		name = "Helm", -- This sets a label for all helm-related keybindings
 		c = { "<cmd>HelmDeployFromBuffer<CR>", "Deploy Buffer to Context" },
 		d = { "<cmd>HelmDryRun<CR>", "DryRun Buffer" },
-        a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
+        	a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
 		k = { "<cmd>KubeSwitchContext<CR>", "Switch Kubernetes Context" },
 	},
 }
