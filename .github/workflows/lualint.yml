@@ -27,5 +27,5 @@ jobs:
           
       - name: Lint code
         run: |
-          # Run linting command and store the exit code
-          luacheck . || exit 0  # luacheck: ignore vim
+          # Run linting command and filter out the "accessing undefined variable vim" message
+          luacheck . | grep -v "accessing undefined variable vim" || exit 0
