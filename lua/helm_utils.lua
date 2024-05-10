@@ -35,8 +35,8 @@ function M.helm_deploy_from_buffer()
     local chart_directory = file_path:match("(.*/)") or ""
 
     -- Prompt user for input regarding release name and namespace
-    local chart_name = vim.fn.input("Enter Chart Name (e.g., argo-cd): ")
-    local namespace = vim.fn.input("Enter Namespace (e.g., argo-cd): ")
+    local chart_name = vim.fn.input("Enter Realese Name: ")
+    local namespace = vim.fn.input("Enter Namespace: ")
 
     -- Construct the Helm command using the buffer's file as the values file
     local helm_cmd = string.format(
