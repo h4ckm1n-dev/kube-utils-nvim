@@ -24,34 +24,36 @@ local function run_shell_command(cmd)
 end
 
 function M.helm_deploy_from_buffer()
-	-- Fetch the current file path from the buffer
-	local file_path = vim.api.nvim_buf_get_name(0)
-	if file_path == "" then
-		print("No file selected")
-		return
-	end
+    -- Fetch the current file path from the buffer
+    local file_path = vim.api.nvim_buf_get_name(0)
+    if file_path == "" then
+        print("No file selected")
+        return
+    end
 
-	-- Prompt user for input regarding other deployment details
-	local chart_name = vim.fn.input("Enter Chart Name (e.g., argo-cd): ")
-	local chart_directory = vim.fn.input("Enter Chart Directory (e.g., argo-cd/): ")
-	local namespace = vim.fn.input("Enter Namespace (e.g., argo-cd): ")
+    -- Parse file path to extract chart directory
+    local chart_directory = file_path:match("(.*/)") or ""
 
-	-- Construct the Helm command using the buffer's file as the values file
-	local helm_cmd = string.format(
-		"helm upgrade --install %s %s --values %s -n %s --create-namespace",
-		chart_name,
-		chart_directory,
-		file_path,
-		namespace
-	)
+    -- Prompt user for input regarding release name and namespace
+    local chart_name = vim.fn.input("Enter Chart Name (e.g., argo-cd): ")
+    local namespace = vim.fn.input("Enter Namespace (e.g., argo-cd): ")
 
-	-- Execute the Helm command
-	local result = run_shell_command(helm_cmd)
-	if result and result ~= "" then
-		print("Deployment successful: \n" .. result)
-	else
-		print("Deployment failed or no output returned.")
-	end
+    -- Construct the Helm command using the buffer's file as the values file
+    local helm_cmd = string.format(
+        "helm upgrade --install %s %s --values %s -n %s --create-namespace",
+        chart_name,
+        chart_directory,
+        file_path,
+        namespace
+    )
+
+    -- Execute the Helm command
+    local result = run_shell_command(helm_cmd)
+    if result and result ~= "" then
+        print("Deployment successful: \n" .. result)
+    else
+        print("Deployment failed or no output returned.")
+    end
 end
 
 -- Function to switch Kubernetes contexts
