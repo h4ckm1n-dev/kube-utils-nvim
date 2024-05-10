@@ -103,6 +103,49 @@ function M.helm_dryrun_from_buffer()
 	vim.api.nvim_set_current_buf(bufnr)
 end
 
+-- Function to rollback a Helm release
+function M.rollback_release()
+    -- Fetch the release name from the user
+    local release_name = vim.fn.input("Enter Release Name to Rollback: ")
+    if release_name == "" then
+        print("No release name provided.")
+        return
+    end
+
+    -- Fetch release history
+    local history_cmd = string.format("helm history %s", release_name)
+    local history_output, history_error = run_shell_command(history_cmd)
+    if not history_output then
+        print("Error fetching release history: " .. tostring(history_error))
+        return
+    end
+
+    -- Parse release history to extract revision numbers
+    local revisions = {}
+    for line in history_output:gmatch("[^\r\n]+") do
+        local revision = line:match("^%s*(%d+)%s+")
+        if revision then
+            table.insert(revisions, tonumber(revision))
+        end
+    end
+
+    -- Prompt user to select a revision to rollback to
+    local selected_revision = vim.fn.inputlist(revisions)
+    if selected_revision <= 0 or selected_revision > #revisions then
+        print("Invalid revision selected.")
+        return
+    end
+
+    -- Perform the rollback
+    local rollback_cmd = string.format("helm rollback %s %d", release_name, revisions[selected_revision])
+    local result, error_message = run_shell_command(rollback_cmd)
+    if result then
+        print("Rollback successful.")
+    else
+        print("Error rolling back release: " .. tostring(error_message))
+    end
+end
+
 -- Function to switch Kubernetes contexts
 function M.switch_kubernetes_context()
 	local contexts, error_message = run_shell_command("kubectl config get-contexts -o name")
@@ -135,6 +178,7 @@ end
 function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
 	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
+	vim.api.nvim_create_user_command("Rollback", M.rollback_release, {})
 	vim.api.nvim_create_user_command("KubeSwitchContext", M.switch_kubernetes_context, {})
 end
 
