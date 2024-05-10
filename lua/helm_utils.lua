@@ -89,4 +89,20 @@ function M.setup()
 	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dry_run, {})
 end
 
+-- Helm keybindings
+local helm_mappings = {
+	h = {
+		name = "Helm", -- This sets a label for all helm-related keybindings
+		c = { "<cmd>HelmDeployCurrent<CR>", "Deploy Current Chart" },
+		d = { "<cmd>HelmDryRun<CR>", "Select and Deploy Chart" },
+		k = { "<cmd>KubeSwitchContext<CR>", "Switch Kubernetes Context" },
+	},
+}
+
+-- Require the which-key plugin
+local wk = require("which-key")
+
+-- Register the Helm keybindings with a specific prefix
+wk.register(helm_mappings, { prefix = "<leader>" })
+
 return M
