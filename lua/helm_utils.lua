@@ -40,18 +40,35 @@ function M.helm_dry_run()
 	vim.api.nvim_buf_set_lines(0, 0, -1, true, vim.split(result, "\n")) -- Display the result
 end
 
--- Function to deploy the Helm chart of the current file
-function M.helm_deploy_current_file()
+function M.helm_deploy_from_buffer()
+	-- Fetch the current file path from the buffer
 	local file_path = vim.api.nvim_buf_get_name(0)
-	local release_name = vim.fn.input("Enter release name: ")
-	local namespace = vim.fn.input("Enter namespace: ")
+	if file_path == "" then
+		print("No file selected")
+		return
+	end
 
-	-- Ensure Minikube is the target context
-	run_shell_command("kubectl config use-context minikube")
+	-- Prompt user for input regarding other deployment details
+	local chart_name = vim.fn.input("Enter Chart Name (e.g., argo-cd): ")
+	local chart_directory = vim.fn.input("Enter Chart Directory (e.g., argo-cd/): ")
+	local namespace = vim.fn.input("Enter Namespace (e.g., argo-cd): ")
 
-	local helm_cmd = "helm upgrade --install " .. release_name .. " " .. file_path .. " --namespace " .. namespace
+	-- Construct the Helm command using the buffer's file as the values file
+	local helm_cmd = string.format(
+		"helm upgrade --install %s %s --values %s -n %s --create-namespace",
+		chart_name,
+		chart_directory,
+		file_path,
+		namespace
+	)
+
+	-- Execute the Helm command
 	local result = run_shell_command(helm_cmd)
-	print(result)
+	if result and result ~= "" then
+		print("Deployment successful: \n" .. result)
+	else
+		print("Deployment failed or no output returned.")
+	end
 end
 
 -- Function to switch Kubernetes contexts
@@ -84,7 +101,7 @@ end
 
 -- Register Neovim commands
 function M.setup()
-	vim.api.nvim_create_user_command("HelmDeployCurrent", M.helm_deploy_current_file, {})
+	vim.api.nvim_create_user_command("helm_deploy_from_buffer", M.helm_deploy_current_file, {})
 	vim.api.nvim_create_user_command("KubeSwitchContext", M.switch_kubernetes_context, {})
 	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dry_run, {})
 end
@@ -93,7 +110,7 @@ end
 local helm_mappings = {
 	h = {
 		name = "Helm", -- This sets a label for all helm-related keybindings
-		c = { "<cmd>HelmDeployCurrent<CR>", "Deploy Current Chart" },
+		c = { "<cmd>helm_deploy_from_buffer<CR>", "Deploy Current Chart" },
 		d = { "<cmd>HelmDryRun<CR>", "Select and Deploy Chart" },
 		k = { "<cmd>KubeSwitchContext<CR>", "Switch Kubernetes Context" },
 	},
