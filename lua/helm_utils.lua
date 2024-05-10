@@ -98,6 +98,9 @@ function M.helm_dryrun_from_buffer()
 	else
 		print("Dry run failed or no output returned.")
 	end
+
+	-- Switch to the new buffer
+	vim.api.nvim_set_current_buf(bufnr)
 end
 
 -- Function to switch Kubernetes contexts
