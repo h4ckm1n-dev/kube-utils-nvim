@@ -73,7 +73,7 @@ function M.helm_dryrun_from_buffer()
 
 	-- Construct the Helm dry run command using the buffer's file as the values file
 	local helm_cmd = string.format(
-		"helm install --debug --dry-run %s %s --values %s -n %s --create-namespace",
+		"helm install --dry-run %s %s --values %s -n %s --create-namespace 2>&1 | grep -v '^debug'",
 		chart_name,
 		chart_directory,
 		file_path,
