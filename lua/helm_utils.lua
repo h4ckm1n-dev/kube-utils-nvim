@@ -156,8 +156,8 @@ end
 function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
 	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
-	vim.api.nvim_create_user_command("KubeSwitchContext", M.switch_kubernetes_context, {})
-	vim.api.nvim_create_user_command("Rollback", M.rollback_release, {})
+	vim.api.nvim_create_user_command("KubeSwitchContext", M.switch_kubernetes_context, {})	   
+	vim.api.nvim_create_user_command("KubectlApplyFromBuffer", M.kubectl_apply_from_buffer, {})
 end
 
 return M
