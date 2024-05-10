@@ -83,7 +83,10 @@ function M.helm_dryrun_from_buffer()
 	-- Execute the Helm dry run command
 	local result = run_shell_command(helm_cmd)
 
-	-- Open a new buffer
+	-- Open a new tab
+	vim.cmd("tabnew")
+
+	-- Create a new buffer
 	local bufnr = vim.api.nvim_create_buf(false, true)
 
 	-- Set the filetype to YAML
@@ -92,7 +95,6 @@ function M.helm_dryrun_from_buffer()
 	-- Print the output in the new buffer in Neovim
 	if result and result ~= "" then
 		vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
-		vim.api.nvim_set_current_buf(bufnr)
 	else
 		print("Dry run failed or no output returned.")
 	end
