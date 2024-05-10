@@ -51,8 +51,8 @@ wk.register(helm_mappings, { prefix = "<leader>" })
 **Kubernetes Context Switching:** Use `:KubeSwitchContext` to switch between Kubernetes contexts.
 
 ## Requirements
-Neovim 0.5.0 or higher
-Helm (if using Helm features)
+Neovim 0.9.0 or higher
+Helm
 kubectl
 
 ## Configuration
