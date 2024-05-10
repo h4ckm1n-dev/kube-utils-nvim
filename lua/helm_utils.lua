@@ -103,62 +103,26 @@ function M.helm_dryrun_from_buffer()
 	vim.api.nvim_set_current_buf(bufnr)
 end
 
+function M.kubectl_apply_from_buffer()
+    -- Fetch the current file path from the buffer
+    local file_path = vim.api.nvim_buf_get_name(0)
+    if file_path == "" then
+        print("No file selected")
+        return
+    end
+
+    -- Execute the kubectl apply command
+    local result = run_shell_command("kubectl apply -f " .. file_path)
+
+    if result and result ~= "" then
+        print("kubectl apply successful: \n" .. result)
+    else
+        print("kubectl apply failed or no output returned.")
+    end
+end
+
 -- Load Telescope
 local telescope = require("telescope.builtin")
-
--- Function to rollback a Helm release
-function M.rollback_release()
-	-- Fetch the release name from the user
-	local release_name = vim.fn.input("Enter Release Name to Rollback: ")
-	if release_name == "" then
-		print("No release name provided.")
-		return
-	end
-
-	-- Fetch release history
-	local history_cmd = string.format("helm history %s", release_name)
-	local history_output, history_error = run_shell_command(history_cmd)
-	if not history_output then
-		print("Error fetching release history: " .. tostring(history_error))
-		return
-	end
-
-	-- Parse release history to extract revision numbers
-	local revisions = {}
-	for line in history_output:gmatch("[^\r\n]+") do
-		local revision = line:match("^%s*(%d+)%s+")
-		if revision then
-			table.insert(revisions, tonumber(revision))
-		end
-	end
-
-	-- Use Telescope picker to select a revision
-	telescope.picker({
-		prompt_title = "Select a revision to rollback to",
-		results = revisions,
-		sorter = require("telescope.config").values.sorter(),
-		attach_mappings = function(prompt_bufnr)
-			local actions = require("telescope.actions")
-
-			-- When the user selects a revision, perform the rollback
-			actions.select_default:replace(function()
-				local selection = actions.get_selected_entry(prompt_bufnr)
-				actions.close(prompt_bufnr)
-
-				-- Perform the rollback
-				local rollback_cmd = string.format("helm rollback %s %d", release_name, selection.value)
-				local result, error_message = run_shell_command(rollback_cmd)
-				if result then
-					print("Rollback successful.")
-				else
-					print("Error rolling back release: " .. tostring(error_message))
-				end
-			end)
-
-			return true
-		end,
-	})
-end
 
 -- Function to switch Kubernetes contexts
 function M.switch_kubernetes_context()
@@ -192,8 +156,8 @@ end
 function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
 	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
-	vim.api.nvim_create_user_command("Rollback", M.rollback_release, {})
 	vim.api.nvim_create_user_command("KubeSwitchContext", M.switch_kubernetes_context, {})
+	vim.api.nvim_create_user_command("Rollback", M.rollback_release, {})
 end
 
 return M
