@@ -32,7 +32,7 @@ local helm_mappings = {
 		name = "Helm", -- This sets a label for all helm-related keybindings
 		c = { "<cmd>HelmDeployFromBuffer<CR>", "Deploy Buffer to Context" },
 		d = { "<cmd>HelmDryRun<CR>", "DryRun Buffer" },
-        	a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
+        a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
 		k = { "<cmd>KubeSwitchContext<CR>", "Switch Kubernetes Context" },
 	},
 }
@@ -45,11 +45,10 @@ wk.register(helm_mappings, { prefix = "<leader>" })
 ```
 
 ## Usage
-Helm Deployment: Use :HelmDeployFromBuffer to deploy the Helm chart from the current buffer. You'll be prompted for the release name and namespace.
-
-Helm Dry Run: Use :HelmDryRun to simulate the Helm chart installation from the current buffer. You'll be prompted for the release name and namespace, and a new tab will open showing the simulated output.
-Kubectl Apply: Use :KubectlApplyFromBuffer to apply Kubernetes manifests from the current buffer.
-Kubernetes Context Switching: Use :KubeSwitchContext to switch between Kubernetes contexts.
+**Helm Deployment:** Use `:HelmDeployFromBuffer` to deploy the Helm chart from the current buffer. You'll be prompted for the release name and namespace.
+**Helm Dry Run:** Use `:HelmDryRun` to simulate the Helm chart installation from the current buffer. You'll be prompted for the release name and namespace, and a new tab will open showing the simulated output.
+**Kubectl Apply:** Use `:KubectlApplyFromBuffer` to apply Kubernetes manifests from the current buffer.
+**Kubernetes Context Switching:** Use `:KubeSwitchContext` to switch between Kubernetes contexts.
 
 ## Requirements
 Neovim 0.5.0 or higher
