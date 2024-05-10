@@ -18,9 +18,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Install luacheck (replace with your preferred linter)
+          # Install LuaRocks
           sudo apt-get update
-          sudo apt-get install luacheck
+          sudo apt-get install -y luarocks
+          
+          # Install luacheck using LuaRocks
+          sudo luarocks install luacheck
 
       - name: Lint code
         run: |
