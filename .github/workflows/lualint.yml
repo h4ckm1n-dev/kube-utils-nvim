@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
       - name: Install dependencies
         run: |
@@ -28,4 +28,4 @@ jobs:
       - name: Lint code
         run: |
           # Run linting command and filter out the "accessing undefined variable vim" message
-          luacheck . | grep -v "accessing undefined variable vim" || exit 0
+          luacheck . | sed '/accessing undefined variable vim/d' || exit 0
