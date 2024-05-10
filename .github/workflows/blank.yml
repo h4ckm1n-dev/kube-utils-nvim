@@ -1,0 +1,29 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          # Install luacheck (replace with your preferred linter)
+          sudo apt-get update
+          sudo apt-get install luacheck
+
+      - name: Lint code
+        run: |
+          # Run linting command (replace with your linting command)
+          luacheck .
+
