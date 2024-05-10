@@ -56,6 +56,43 @@ function M.helm_deploy_from_buffer()
     end
 end
 
+function M.helm_dryrun_from_buffer()
+    -- Fetch the current file path from the buffer
+    local file_path = vim.api.nvim_buf_get_name(0)
+    if file_path == "" then
+        print("No file selected")
+        return
+    end
+
+    -- Parse file path to extract chart directory
+    local chart_directory = file_path:match("(.*/)") or ""
+
+    -- Prompt user for input regarding release name and namespace
+    local chart_name = vim.fn.input("Enter Release Name: ")
+    local namespace = vim.fn.input("Enter Namespace: ")
+
+    -- Construct the Helm dry run command using the buffer's file as the values file
+    local helm_cmd = string.format(
+        "helm install --debug --dry-run %s %s --values %s -n %s --create-namespace",
+        chart_name,
+        chart_directory,
+        file_path,
+        namespace
+    )
+
+    -- Execute the Helm dry run command
+    local result = run_shell_command(helm_cmd)
+
+    -- Print the output in a new buffer in Neovim
+    if result and result ~= "" then
+        local bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, '\n'))
+        vim.api.nvim_set_current_buf(bufnr)
+    else
+        print("Dry run failed or no output returned.")
+    end
+end
+
 -- Function to switch Kubernetes contexts
 function M.switch_kubernetes_context()
 	local contexts, error_message = run_shell_command("kubectl config get-contexts -o name")
@@ -87,6 +124,7 @@ end
 -- Register Neovim commands
 function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
+	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
 	vim.api.nvim_create_user_command("KubeSwitchContext", M.switch_kubernetes_context, {})
 end
 
