@@ -45,13 +45,13 @@ wk.register(helm_mappings, { prefix = "<leader>" })
 ```
 
 ## Usage
-**Helm Deployment:** Use `:HelmDeployFromBuffer` to deploy the Helm chart from the current buffer. You'll be prompted for the release name and namespace.
+- **Helm Deployment:** Use `:HelmDeployFromBuffer` to deploy the Helm chart from the current buffer. You'll be prompted for the release name and namespace.
 
-**Helm Dry Run:** Use `:HelmDryRun` to simulate the Helm chart installation from the current buffer. You'll be prompted for the release name and namespace, and a new tab will open showing the simulated output.
+- **Helm Dry Run:** Use `:HelmDryRun` to simulate the Helm chart installation from the current buffer. You'll be prompted for the release name and namespace, and a new tab will open showing the simulated output.
 
-**Kubectl Apply:** Use `:KubectlApplyFromBuffer` to apply Kubernetes manifests from the current buffer.
+- **Kubectl Apply:** Use `:KubectlApplyFromBuffer` to apply Kubernetes manifests from the current buffer.
 
-**Kubernetes Context Switching:** Use `:KubeSwitchContext` to switch between Kubernetes contexts.
+- **Kubernetes Context Switching:** Use `:KubeSwitchContext` to switch between Kubernetes contexts.
 
 ## Requirements
 Neovim 0.9.0 or higher
