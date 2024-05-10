@@ -23,23 +23,6 @@ local function run_shell_command(cmd)
 	return output
 end
 
--- Function to perform a Helm dry-run deployment and display results in a new buffer
-function M.helm_dry_run()
-	local file_path = vim.api.nvim_buf_get_name(0)
-	if file_path == "" then
-		print("No file selected")
-		return
-	end
-	local helm_cmd = "helm upgrade --install --dry-run " .. file_path .. " " .. file_path
-	local result = run_shell_command(helm_cmd)
-	if not result then -- Check if result is nil or empty
-		print("Failed to execute helm command or no output returned.")
-		return
-	end
-	vim.cmd("new") -- Open a new buffer
-	vim.api.nvim_buf_set_lines(0, 0, -1, true, vim.split(result, "\n")) -- Display the result
-end
-
 function M.helm_deploy_from_buffer()
 	-- Fetch the current file path from the buffer
 	local file_path = vim.api.nvim_buf_get_name(0)
@@ -103,7 +86,6 @@ end
 function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
 	vim.api.nvim_create_user_command("KubeSwitchContext", M.switch_kubernetes_context, {})
-	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dry_run, {})
 end
 
 return M
