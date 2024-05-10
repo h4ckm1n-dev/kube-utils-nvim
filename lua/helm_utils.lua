@@ -1,4 +1,4 @@
- ocal M = {}
+local M = {}
 
 -- Utility function to run shell commands and capture output
 local function run_shell_command(cmd)
