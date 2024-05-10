@@ -3,6 +3,7 @@
 This Neovim plugin provides seamless integration with Kubernetes and Helm, allowing you to deploy and manage Kubernetes resources directly from your editor.
 
 ## Build Status
+[![Go](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml/badge.svg)](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml)
 
 ## Features
 - **Helm Deployment:** Deploy Helm charts directly from your Neovim buffer.
