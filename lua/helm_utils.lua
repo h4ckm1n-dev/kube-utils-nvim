@@ -142,19 +142,15 @@ function M.helm_dryrun_from_buffer()
                     run_shell_command("kubectl config use-context " .. context_selection.value)
 
                     -- Now fetch namespaces after context is selected
-                    local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
+                    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
                     if not namespaces then
-                        print("Failed to fetch namespaces: " .. (err or "No namespaces found."))
+                        print("Failed to fetch namespaces: " .. (err or ""))
                         return
                     end
 
                     local namespace_list = vim.split(namespaces, "\n", true)
-                    if #namespace_list == 0 then
-                        print("No namespaces available.")
-                        return
-                    end
 
-                    -- Create a Telescope picker for selecting namespaces
+                    -- Define Telescope picker to select namespace
                     require("telescope.pickers").new({}, {
                         prompt_title = "Select Namespace",
                         finder = require("telescope.finders").new_table {
@@ -182,22 +178,19 @@ function M.helm_dryrun_from_buffer()
                                         namespace
                                     )
                                     local result = run_shell_command(helm_cmd)
+
+                                    -- Open a new tab and create a buffer
+                                    vim.cmd("tabnew")
+                                    local bufnr = vim.api.nvim_create_buf(false, true)
+                                    vim.api.nvim_buf_set_option(bufnr, "filetype", "yaml")
                                     if result and result ~= "" then
-                                        -- Open a new buffer and display the result
-                                        vim.cmd("new")  -- Open a new buffer in a new window
-                                        local bufnr = vim.api.nvim_get_current_buf()
                                         vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
-                                        vim.api.nvim_buf_set_option(bufnr, "filetype", "yaml")
-                                        -- Attach 'yamlls' for linting if it is available
-                                        local clients = vim.lsp.get_active_clients()
-                                        for _, client in ipairs(clients) do
-                                            if client.name == "yamlls" then
-                                                vim.lsp.buf_attach_client(bufnr, client.id)
-                                            end
-                                        end
                                     else
-                                        print("Dry run failed: " .. (err or "Unknown error"))
+                                        print("Dry run failed or no output returned.")
                                     end
+
+                                    -- Switch to the new buffer
+                                    vim.api.nvim_set_current_buf(bufnr)
                                 end
                             end)
                             return true
@@ -209,6 +202,7 @@ function M.helm_dryrun_from_buffer()
         end,
     }):find()
 end
+
 
 function M.kubectl_apply_from_buffer()
     -- First, fetch available contexts
