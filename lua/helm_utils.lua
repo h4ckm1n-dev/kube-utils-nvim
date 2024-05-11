@@ -37,50 +37,61 @@ function M.helm_deploy_from_buffer()
     -- Split namespaces into a table
     local namespace_list = vim.split(namespaces, "\n", true)
 
-    -- Format namespaces into a table with separate entries
-    local formatted_namespaces = {}
-    for _, namespace in ipairs(namespace_list) do
-        table.insert(formatted_namespaces, { value = namespace, display = namespace, ordinal = namespace })
-    end
+    -- Create a Telescope picker for selecting namespaces
+    require("telescope.builtin").select_dynamic({
+        prompt_title = "Select Namespace",
+        results_title = "Namespaces",
+        entry_maker = function(entry)
+            return {
+                value = entry,
+                display = entry,
+                ordinal = entry,
+            }
+        end,
+        sorter = require("telescope.sorters").get_generic_fuzzy_sorter(),
+        results = namespace_list,
+        attach_mappings = function(_, map)
+            map("i", "<CR>", function(prompt_bufnr)
+                local selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
+                require("telescope.actions").close(prompt_bufnr)
+                if selection then
+                    local namespace = selection.value
+                    -- Fetch the current file path from the buffer
+                    local file_path = vim.api.nvim_buf_get_name(0)
+                    if file_path == "" then
+                        print("No file selected")
+                        return
+                    end
 
-    -- Define Telescope picker to select namespace
-    vim.ui.select(formatted_namespaces, { prompt = "Select Namespace:" }, function(choice)
-        if choice then
-            local namespace = choice
-            -- Fetch the current file path from the buffer
-            local file_path = vim.api.nvim_buf_get_name(0)
-            if file_path == "" then
-                print("No file selected")
-                return
-            end
+                    -- Parse file path to extract chart directory
+                    local chart_directory = file_path:match("(.*/)") or ""
 
-            -- Parse file path to extract chart directory
-            local chart_directory = file_path:match("(.*/)") or ""
+                    -- Prompt user for input regarding release name
+                    local chart_name = vim.fn.input("Enter Release Name: ")
 
-            -- Prompt user for input regarding release name
-            local chart_name = vim.fn.input("Enter Release Name: ")
+                    -- Construct the Helm command using the buffer's file as the values file
+                    local helm_cmd = string.format(
+                        "helm upgrade --install %s %s --values %s -n %s --create-namespace",
+                        chart_name,
+                        chart_directory,
+                        file_path,
+                        namespace
+                    )
 
-            -- Construct the Helm command using the buffer's file as the values file
-            local helm_cmd = string.format(
-                "helm upgrade --install %s %s --values %s -n %s --create-namespace",
-                chart_name,
-                chart_directory,
-                file_path,
-                namespace
-            )
-
-            -- Execute the Helm command
-            local result, err = run_shell_command(helm_cmd)
-            if result and result ~= "" then
-                print("Deployment successful: \n" .. result)
-            else
-                print("Deployment failed: " .. (err or "Unknown error"))
-            end
-        else
-            print("No namespace selected.")
-        end
-    end)
+                    -- Execute the Helm command
+                    local result, err = run_shell_command(helm_cmd)
+                    if result and result ~= "" then
+                        print("Deployment successful: \n" .. result)
+                    else
+                        print("Deployment failed: " .. (err or "Unknown error"))
+                    end
+                end
+            end)
+            return true
+        end,
+    })
 end
+
 
 function M.helm_dryrun_from_buffer()
     -- Fetch available namespaces using kubectl
