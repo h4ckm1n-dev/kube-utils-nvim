@@ -29,30 +29,23 @@ end
 function M.helm_deploy_from_buffer()
     -- Fetch available namespaces using kubectl with awk for formatting
     local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
-    if not namespaces or namespaces == "" then
+    if not namespaces then
         print("Failed to fetch namespaces: " .. (err or "No namespaces found."))
         return
     end
 
-    -- Trim any trailing whitespace from the namespace list
-    namespaces = namespaces:gsub("%s+$", "")
-
     -- Split namespaces into a table
     local namespace_list = vim.split(namespaces, "\n", true)
-
-    -- Create a table to hold individual namespace entries
-    local formatted_namespaces = {}
-    for _, namespace in ipairs(namespace_list) do
-        if namespace ~= "" then  -- Ensure no empty lines are included
-            table.insert(formatted_namespaces, { value = namespace, display = namespace })
-        end
+    if #namespace_list == 0 then
+        print("No namespaces available.")
+        return
     end
 
     -- Create a Telescope picker for selecting namespaces
     require("telescope.pickers").new({}, {
         prompt_title = "Select Namespace",
         finder = require("telescope.finders").new_table {
-            results = formatted_namespaces,
+            results = namespace_list,
         },
         sorter = require("telescope.config").values.generic_sorter({}),
         attach_mappings = function(_, map)
@@ -87,6 +80,7 @@ function M.helm_deploy_from_buffer()
         end,
     }):find()
 end
+
 
 function M.helm_dryrun_from_buffer()
     -- Fetch available namespaces using kubectl
