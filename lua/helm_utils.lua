@@ -34,6 +34,9 @@ function M.helm_deploy_from_buffer()
         return
     end
 
+    -- Trim any trailing whitespace from the namespace list
+    namespaces = namespaces:gsub("%s+$", "")
+
     -- Split namespaces into a table
     local namespace_list = vim.split(namespaces, "\n", true)
 
@@ -84,8 +87,6 @@ function M.helm_deploy_from_buffer()
         end,
     }):find()
 end
-
-
 
 function M.helm_dryrun_from_buffer()
     -- Fetch available namespaces using kubectl
