@@ -97,140 +97,147 @@ function M.helm_dependency_build_from_buffer()
 end
 
 function M.helm_deploy_from_buffer()
-    -- First, fetch available contexts
-    local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
-    if not contexts then
-        print(context_err or "Failed to fetch Kubernetes contexts.")
-        return
-    end
+	-- First, fetch available contexts
+	local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
+	if not contexts then
+		print(context_err or "Failed to fetch Kubernetes contexts.")
+		return
+	end
 
-    local context_list = vim.split(contexts, "\n", true)
-    if #context_list == 0 then
-        print("No Kubernetes contexts available.")
-        return
-    end
+	local context_list = vim.split(contexts, "\n", true)
+	if #context_list == 0 then
+		print("No Kubernetes contexts available.")
+		return
+	end
 
-    -- Create a Telescope picker for selecting Kubernetes context
-    require("telescope.pickers")
-        .new({}, {
-            prompt_title = "Select Kubernetes Context",
-            finder = require("telescope.finders").new_table({
-                results = context_list,
-            }),
-            sorter = require("telescope.config").values.generic_sorter({}),
-            attach_mappings = function(_, map)
-                map("i", "<CR>", function(prompt_bufnr)
-                    local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
-                    require("telescope.actions").close(prompt_bufnr)
-                    if context_selection then
-                        -- Use the selected context
-                        run_shell_command("kubectl config use-context " .. context_selection.value)
-                        -- Now fetch namespaces after context is selected
-                        local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
-                        if not namespaces then
-                            print("Failed to fetch namespaces: " .. (err or "No namespaces found."))
-                            return
-                        end
+	-- Create a Telescope picker for selecting Kubernetes context
+	require("telescope.pickers")
+		.new({}, {
+			prompt_title = "Select Kubernetes Context",
+			finder = require("telescope.finders").new_table({
+				results = context_list,
+			}),
+			sorter = require("telescope.config").values.generic_sorter({}),
+			attach_mappings = function(_, map)
+				map("i", "<CR>", function(prompt_bufnr)
+					local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
+					require("telescope.actions").close(prompt_bufnr)
+					if context_selection then
+						-- Use the selected context
+						run_shell_command("kubectl config use-context " .. context_selection.value)
+						-- Now fetch namespaces after context is selected
+						local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
+						if not namespaces then
+							print("Failed to fetch namespaces: " .. (err or "No namespaces found."))
+							return
+						end
 
-                        local namespace_list = vim.split(namespaces, "\n", true)
-                        if #namespace_list == 0 then
-                            print("No namespaces available.")
-                            return
-                        end
+						local namespace_list = vim.split(namespaces, "\n", true)
+						if #namespace_list == 0 then
+							print("No namespaces available.")
+							return
+						end
 
-                        -- Add the option to create a new namespace
-                        table.insert(namespace_list, 1, "[Create New Namespace]")
+						-- Add the option to create a new namespace
+						table.insert(namespace_list, 1, "[Create New Namespace]")
 
-                        -- Create a Telescope picker for selecting namespaces
-                        require("telescope.pickers")
-                            .new({}, {
-                                prompt_title = "Select Namespace",
-                                finder = require("telescope.finders").new_table({
-                                    results = namespace_list,
-                                }),
-                                sorter = require("telescope.config").values.generic_sorter({}),
-                                attach_mappings = function(_, map)
-                                    map("i", "<CR>", function(ns_prompt_bufnr)
-                                        local namespace_selection =
-                                            require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
-                                        require("telescope.actions").close(ns_prompt_bufnr)
-                                        if namespace_selection then
-                                            if namespace_selection.index == 1 then
-                                                local new_ns_name = vim.fn.input("Enter Namespace Name: ")
-                                                if new_ns_name ~= "" then
-                                                    local create_ns_cmd = string.format(
-                                                        "kubectl create namespace %s",
-                                                        new_ns_name
-                                                    )
-                                                    local create_ns_result, create_ns_err = run_shell_command(create_ns_cmd)
-                                                    if create_ns_result then
-                                                        print(string.format("Namespace %s created successfully.", new_ns_name))
-                                                        
-                                                        -- Deploy after creating namespace
-                                                        local file_path = vim.api.nvim_buf_get_name(0)
-                                                        if file_path == "" then
-                                                            print("No file selected")
-                                                            return
-                                                        end
-                                                        local chart_directory = file_path:match("(.*/)")
-                                                        local chart_name = vim.fn.input("Enter Release Name: ")
-                                                        local helm_cmd = string.format(
-                                                            "helm upgrade --install %s %s --values %s -n %s --create-namespace",
-                                                            chart_name,
-                                                            chart_directory,
-                                                            file_path,
-                                                            new_ns_name
-                                                        )
-                                                        local result, helm_err = run_shell_command(helm_cmd)
-                                                        if result and result ~= "" then
-                                                            print("Deployment successful: \n" .. result)
-                                                        else
-                                                            print("Deployment failed: " .. (helm_err or "Unknown error"))
-                                                        end
-                                                    else
-                                                        print("Failed to create namespace: " .. (create_ns_err or "Unknown error"))
-                                                    end
-                                                else
-                                                    print("Namespace name cannot be empty.")
-                                                end
-                                            else
-                                                local namespace = namespace_selection.value
-                                                local file_path = vim.api.nvim_buf_get_name(0)
-                                                if file_path == "" then
-                                                    print("No file selected")
-                                                    return
-                                                end
-                                                local chart_directory = file_path:match("(.*/)")
-                                                local chart_name = vim.fn.input("Enter Release Name: ")
-                                                local helm_cmd = string.format(
-                                                    "helm upgrade --install %s %s --values %s -n %s --create-namespace",
-                                                    chart_name,
-                                                    chart_directory,
-                                                    file_path,
-                                                    namespace
-                                                )
-                                                local result, helm_err = run_shell_command(helm_cmd)
-                                                if result and result ~= "" then
-                                                    print("Deployment successful: \n" .. result)
-                                                else
-                                                    print("Deployment failed: " .. (helm_err or "Unknown error"))
-                                                end
-                                            end
-                                        end
-                                    end)
-                                    return true
-                                end,
-                            })
-                            :find()
-                    end
-                end)
-                return true
-            end,
-        })
-        :find()
+						-- Create a Telescope picker for selecting namespaces
+						require("telescope.pickers")
+							.new({}, {
+								prompt_title = "Select Namespace",
+								finder = require("telescope.finders").new_table({
+									results = namespace_list,
+								}),
+								sorter = require("telescope.config").values.generic_sorter({}),
+								attach_mappings = function(_, map)
+									map("i", function(ns_prompt_bufnr)
+										local namespace_selection =
+											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
+										require("telescope.actions").close(ns_prompt_bufnr)
+										if namespace_selection then
+											if namespace_selection.index == 1 then
+												local new_ns_name = vim.fn.input("Enter Namespace Name: ")
+												if new_ns_name ~= "" then
+													local create_ns_cmd =
+														string.format("kubectl create namespace %s", new_ns_name)
+													local create_ns_result, create_ns_err =
+														run_shell_command(create_ns_cmd)
+													if create_ns_result then
+														print(
+															string.format(
+																"Namespace %s created successfully.",
+																new_ns_name
+															)
+														)
+
+														-- Deploy after creating namespace
+														local file_path = vim.api.nvim_buf_get_name(0)
+														if file_path == "" then
+															print("No file selected")
+															return
+														end
+														local chart_directory = file_path:match("(.*/)")
+														local chart_name = vim.fn.input("Enter Release Name: ")
+														local helm_cmd = string.format(
+															"helm upgrade --install %s %s --values %s -n %s --create-namespace",
+															chart_name,
+															chart_directory,
+															file_path,
+															new_ns_name
+														)
+														local result, helm_err = run_shell_command(helm_cmd)
+														if result and result ~= "" then
+															print("Deployment successful: \n" .. result)
+														else
+															print(
+																"Deployment failed: " .. (helm_err or "Unknown error")
+															)
+														end
+													else
+														print(
+															"Failed to create namespace: "
+																.. (create_ns_err or "Unknown error")
+														)
+													end
+												else
+													print("Namespace name cannot be empty.")
+												end
+											else
+												local namespace = namespace_selection.value
+												local file_path = vim.api.nvim_buf_get_name(0)
+												if file_path == "" then
+													print("No file selected")
+													return
+												end
+												local chart_directory = file_path:match("(.*/)")
+												local chart_name = vim.fn.input("Enter Release Name: ")
+												local helm_cmd = string.format(
+													"helm upgrade --install %s %s --values %s -n %s --create-namespace",
+													chart_name,
+													chart_directory,
+													file_path,
+													namespace
+												)
+												local result, helm_err = run_shell_command(helm_cmd)
+												if result and result ~= "" then
+													print("Deployment successful: \n" .. result)
+												else
+													print("Deployment failed: " .. (helm_err or "Unknown error"))
+												end
+											end
+										end
+									end, "<CR>")
+									return true
+								end,
+							})
+							:find()
+					end
+				end)
+				return true
+			end,
+		})
+		:find()
 end
-
-
 
 function M.remove_deployment()
 	-- First, fetch available namespaces
@@ -289,102 +296,102 @@ function M.remove_deployment()
 end
 
 function M.helm_dryrun_from_buffer()
-    -- First, fetch available contexts
-    local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
-    if not contexts then
-        print(context_err or "Failed to fetch Kubernetes contexts.")
-        return
-    end
+	-- First, fetch available contexts
+	local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
+	if not contexts then
+		print(context_err or "Failed to fetch Kubernetes contexts.")
+		return
+	end
 
-    local context_list = vim.split(contexts, "\n", true)
-    if #context_list == 0 then
-        print("No Kubernetes contexts available.")
-        return
-    end
+	local context_list = vim.split(contexts, "\n", true)
+	if #context_list == 0 then
+		print("No Kubernetes contexts available.")
+		return
+	end
 
-    -- Create a Telescope picker for selecting Kubernetes context
-    require("telescope.pickers")
-        .new({}, {
-            prompt_title = "Select Kubernetes Context",
-            finder = require("telescope.finders").new_table({
-                results = context_list,
-            }),
-            sorter = require("telescope.config").values.generic_sorter({}),
-            attach_mappings = function(_, map)
-                map("i", "<CR>", function(prompt_bufnr)
-                    local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
-                    require("telescope.actions").close(prompt_bufnr)
-                    if context_selection then
-                        -- Use the selected context
-                        run_shell_command("kubectl config use-context " .. context_selection.value)
+	-- Create a Telescope picker for selecting Kubernetes context
+	require("telescope.pickers")
+		.new({}, {
+			prompt_title = "Select Kubernetes Context",
+			finder = require("telescope.finders").new_table({
+				results = context_list,
+			}),
+			sorter = require("telescope.config").values.generic_sorter({}),
+			attach_mappings = function(_, map)
+				map("i", "<CR>", function(prompt_bufnr)
+					local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
+					require("telescope.actions").close(prompt_bufnr)
+					if context_selection then
+						-- Use the selected context
+						run_shell_command("kubectl config use-context " .. context_selection.value)
 
-                        -- Now fetch namespaces after context is selected
-                        local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
-                        if not namespaces then
-                            print("Failed to fetch namespaces: " .. (err or "No namespaces found."))
-                            return
-                        end
+						-- Now fetch namespaces after context is selected
+						local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
+						if not namespaces then
+							print("Failed to fetch namespaces: " .. (err or "No namespaces found."))
+							return
+						end
 
-                        local namespace_list = vim.split(namespaces, "\n", true)
-                        if #namespace_list == 0 then
-                            print("No namespaces available.")
-                            return
-                        end
+						local namespace_list = vim.split(namespaces, "\n", true)
+						if #namespace_list == 0 then
+							print("No namespaces available.")
+							return
+						end
 
-                        -- Create a Telescope picker for selecting namespaces
-                        require("telescope.pickers")
-                            .new({}, {
-                                prompt_title = "Select Namespace",
-                                finder = require("telescope.finders").new_table({
-                                    results = namespace_list,
-                                }),
-                                sorter = require("telescope.config").values.generic_sorter({}),
-                                attach_mappings = function(_, map)
-                                    map("i", "<CR>", function(ns_prompt_bufnr)
-                                        local namespace_selection =
-                                            require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
-                                        require("telescope.actions").close(ns_prompt_bufnr)
-                                        if namespace_selection then
-                                            local namespace = namespace_selection.value
-                                            local file_path = vim.api.nvim_buf_get_name(0)
-                                            if file_path == "" then
-                                                print("No file selected")
-                                                return
-                                            end
-                                            local chart_directory = file_path:match("(.*/)")
-                                            local chart_name = vim.fn.input("Enter Release Name: ")
-                                            local helm_cmd = string.format(
-                                                "helm install --dry-run %s %s --values %s -n %s --create-namespace",
-                                                chart_name,
-                                                chart_directory,
-                                                file_path,
-                                                namespace
-                                            )
-                                            local result = run_shell_command(helm_cmd)
+						-- Create a Telescope picker for selecting namespaces
+						require("telescope.pickers")
+							.new({}, {
+								prompt_title = "Select Namespace",
+								finder = require("telescope.finders").new_table({
+									results = namespace_list,
+								}),
+								sorter = require("telescope.config").values.generic_sorter({}),
+								attach_mappings = function(_, map)
+									map("i", "<CR>", function(ns_prompt_bufnr)
+										local namespace_selection =
+											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
+										require("telescope.actions").close(ns_prompt_bufnr)
+										if namespace_selection then
+											local namespace = namespace_selection.value
+											local file_path = vim.api.nvim_buf_get_name(0)
+											if file_path == "" then
+												print("No file selected")
+												return
+											end
+											local chart_directory = file_path:match("(.*/)")
+											local chart_name = vim.fn.input("Enter Release Name: ")
+											local helm_cmd = string.format(
+												"helm install --dry-run %s %s --values %s -n %s --create-namespace",
+												chart_name,
+												chart_directory,
+												file_path,
+												namespace
+											)
+											local result = run_shell_command(helm_cmd)
 
-                                            -- Open a new tab and create a buffer
-                                            vim.cmd("tabnew")
-                                            local bufnr = vim.api.nvim_create_buf(false, true)
-                                            vim.api.nvim_buf_set_option(bufnr, "filetype", "yaml")
-                                            if result and result ~= "" then
-                                                vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
-                                            else
-                                                print("Dry run failed: " .. (err or "Unknown error"))
-                                            end
-                                            -- Switch to the new buffer
-                                            vim.api.nvim_set_current_buf(bufnr)
-                                        end
-                                    end)
-                                    return true
-                                end,
-                            })
-                            :find()
-                    end
-                end)
-                return true
-            end,
-        })
-        :find()
+											-- Open a new tab and create a buffer
+											vim.cmd("tabnew")
+											local bufnr = vim.api.nvim_create_buf(false, true)
+											vim.api.nvim_buf_set_option(bufnr, "filetype", "yaml")
+											if result and result ~= "" then
+												vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
+											else
+												print("Dry run failed: " .. (err or "Unknown error"))
+											end
+											-- Switch to the new buffer
+											vim.api.nvim_set_current_buf(bufnr)
+										end
+									end)
+									return true
+								end,
+							})
+							:find()
+					end
+				end)
+				return true
+			end,
+		})
+		:find()
 end
 
 function M.kubectl_apply_from_buffer()
@@ -475,111 +482,108 @@ function M.kubectl_apply_from_buffer()
 end
 
 function M.delete_namespace()
-    -- Fetch available namespaces
-    local namespaces, ns_err = run_shell_command("kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'")
-    if not namespaces then
-        print(ns_err or "Failed to fetch namespaces.")
-        return
-    end
+	-- Fetch available namespaces
+	local namespaces, ns_err = run_shell_command("kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'")
+	if not namespaces then
+		print(ns_err or "Failed to fetch namespaces.")
+		return
+	end
 
-    local namespace_list = vim.split(namespaces, " ", true)
-    if #namespace_list == 0 then
-        print("No namespaces available.")
-        return
-    end
+	local namespace_list = vim.split(namespaces, " ", true)
+	if #namespace_list == 0 then
+		print("No namespaces available.")
+		return
+	end
 
-    -- Create a Telescope picker for selecting the namespace
-    require("telescope.pickers")
-        .new({}, {
-            prompt_title = "Select Namespace to Delete",
-            finder = require("telescope.finders").new_table({
-                results = namespace_list,
-            }),
-            sorter = require("telescope.config").values.generic_sorter({}),
-            attach_mappings = function(_, map)
-                map("i", "<CR>", function(prompt_bufnr)
-                    local namespace_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
-                    require("telescope.actions").close(prompt_bufnr)
-                    if namespace_selection then
-                        local namespace = namespace_selection.value
+	-- Create a Telescope picker for selecting the namespace
+	require("telescope.pickers")
+		.new({}, {
+			prompt_title = "Select Namespace to Delete",
+			finder = require("telescope.finders").new_table({
+				results = namespace_list,
+			}),
+			sorter = require("telescope.config").values.generic_sorter({}),
+			attach_mappings = function(_, map)
+				map(function(prompt_bufnr)
+					local namespace_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
+					require("telescope.actions").close(prompt_bufnr)
+					if namespace_selection then
+						local namespace = namespace_selection.value
 
-                        -- Confirm deletion with user
-                        local confirm_delete = vim.fn.input("Delete namespace " .. namespace .. "? [y/N]: ")
-                        if confirm_delete == "y" or confirm_delete == "Y" then
-                            -- Construct the command to delete the namespace
-                            local delete_cmd = string.format("kubectl delete namespace %s", namespace)
+						-- Confirm deletion with user
+						local confirm_delete = vim.fn.input("Delete namespace " .. namespace .. "? [y/N]: ")
+						if confirm_delete == "y" or confirm_delete == "Y" then
+							-- Construct the command to delete the namespace
+							local delete_cmd = string.format("kubectl delete namespace %s", namespace)
 
-                            -- Execute the command to delete the namespace
-                            local result, err = run_shell_command(delete_cmd)
+							-- Execute the command to delete the namespace
+							local result, err = run_shell_command(delete_cmd)
 
-                            -- Check if deletion was successful
-                            if result then
-                                print("Namespace " .. namespace .. " successfully deleted.")
-                            else
-                                print("Failed to delete namespace " .. namespace .. ":", err)
-                            end
-                        else
-                            print("Deletion cancelled.")
-                        end
-                    end
-                end)
-                return true
-            end,
-        })
-        :find()
+							-- Check if deletion was successful
+							if result then
+								print("Namespace " .. namespace .. " successfully deleted.")
+							else
+								print("Failed to delete namespace " .. namespace .. ":", err)
+							end
+						else
+							print("Deletion cancelled.")
+						end
+					end
+				end, "<CR>", "i")
+				return true
+			end,
+		})
+		:find()
 end
 
 function M.open_k9s()
-    -- Define the terminal command to run K9s
-    local k9s_cmd = "k9s"
+	-- Define the terminal command to run K9s
+	local k9s_cmd = "k9s"
 
-    -- Create a new floating window
-    local width = 0.8 -- Width percentage of the screen
-    local height = 0.8 -- Height percentage of the screen
-    local x = (1 - width) / 2
-    local y = (1 - height) / 2
-    local opts = {
-        relative = "editor",
-        width = math.floor(vim.o.columns * width),
-        height = math.floor(vim.o.lines * height),
-        col = math.floor(vim.o.columns * x),
-        row = math.floor(vim.o.lines * y),
-        style = "minimal",
-    }
+	-- Create a new floating window
+	local width = 0.8 -- Width percentage of the screen
+	local height = 0.8 -- Height percentage of the screen
+	local x = (1 - width) / 2
+	local y = (1 - height) / 2
+	local opts = {
+		relative = "editor",
+		width = math.floor(vim.o.columns * width),
+		height = math.floor(vim.o.lines * height),
+		col = math.floor(vim.o.columns * x),
+		row = math.floor(vim.o.lines * y),
+		style = "minimal",
+	}
 
-    -- Create a new terminal buffer inside the floating window
-    local bufnr = vim.api.nvim_create_buf(false, true)
-    local win_id = vim.api.nvim_open_win(bufnr, true, opts)
+	-- Create a new terminal buffer inside the floating window
+	local bufnr = vim.api.nvim_create_buf(false, true)
+	local win_id = vim.api.nvim_open_win(bufnr, true, opts)
 
-    -- Run K9s in the terminal buffer
-    vim.fn.termopen(k9s_cmd)
+	-- Run K9s in the terminal buffer
+	vim.fn.termopen(k9s_cmd)
 
-    -- Set key mappings to navigate the floating window
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
+	-- Set key mappings to navigate the floating window
+	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
 
-    -- Unbind Ctrl+C
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<Nop>", { noremap = true, silent = true })
+	-- Unbind Ctrl+C
+	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<Nop>", { noremap = true, silent = true })
 
-    -- Map Ctrl+C to exit insert mode
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<C-\\><C-n>:stopinsert<CR>", { noremap = true, silent = true })
+	-- Map Ctrl+C to exit insert mode
+	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<C-\\><C-n>:stopinsert<CR>", { noremap = true, silent = true })
 end
-
-
 
 function M.open_k9s_split()
-    -- Open K9s in a new terminal buffer
-    vim.cmd("vnew | terminal k9s")
+	-- Open K9s in a new terminal buffer
+	vim.cmd("vnew | terminal k9s")
 
-    -- Set up key mapping to quit the terminal window gracefully
-    vim.api.nvim_buf_set_keymap(0, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(0, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
+	-- Set up key mapping to quit the terminal window gracefully
+	vim.api.nvim_buf_set_keymap(0, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(0, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
 	-- Unbind Ctrl+X
-    vim.api.nvim_buf_set_keymap(0, "t", "<C-c>", "<Nop>", { noremap = true, silent = true })
-    -- Map Ctrl+C to exit insert mode
-    vim.api.nvim_buf_set_keymap(0, "t", "<C-c>", "<C-\\><C-n>:stopinsert<CR>", { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(0, "t", "<C-c>", "<Nop>", { noremap = true, silent = true })
+	-- Map Ctrl+C to exit insert mode
+	vim.api.nvim_buf_set_keymap(0, "t", "<C-c>", "<C-\\><C-n>:stopinsert<CR>", { noremap = true, silent = true })
 end
-
 
 -- Register Neovim commands
 function M.setup()
