@@ -302,16 +302,10 @@ function M.open_k9s()
     end
 
     -- Use Telescope to pick a Kubernetes context
-    require("telescope.builtin").select_string({
+    require("telescope.builtin").find_files({
         prompt_title = "Select Kubernetes Context",
+        cwd = "/tmp",  -- Setting cwd to avoid actual file search
         results = context_list,
-        entry_maker = function(entry)
-            return {
-                value = entry,
-                display = entry,
-                ordinal = entry,
-            }
-        end,
         attach_mappings = function(prompt_bufnr, map)
             map("i", "<CR>", function()
                 local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
@@ -328,6 +322,7 @@ function M.open_k9s()
         end,
     })
 end
+
 
 -- Register Neovim commands
 function M.setup()
