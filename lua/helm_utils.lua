@@ -34,14 +34,8 @@ function M.helm_deploy_from_buffer()
         return
     end
 
-    -- Split namespaces into a table
-    local namespace_list = vim.split(namespaces, "\n", true)
-    if #namespace_list == 0 then
-        print("No namespaces available.")
-        return
-    end
-
-    vim.ui.select(namespace_list, { prompt = "Select Namespace:" }, function(choice)
+    -- Define Telescope picker to select namespace
+    vim.ui.select(vim.split(namespaces, "\n"), { prompt = "Select Namespace:" }, function(choice)
         if choice then
             local namespace = choice
             -- Fetch the current file path from the buffer
@@ -87,14 +81,8 @@ function M.helm_dryrun_from_buffer()
         return
     end
 
-    -- Split namespaces into a table
-    local namespace_list = vim.split(namespaces, "\n", true)
-    if #namespace_list == 0 then
-        print("No namespaces available.")
-        return
-    end
-
-    vim.ui.select(namespace_list, { prompt = "Select Namespace:" }, function(choice)
+    -- Define Telescope picker to select namespace
+    vim.ui.select(vim.split(namespaces, "\n"), { prompt = "Select Namespace:" }, function(choice)
         if choice then
             local namespace = choice
             -- Fetch the current file path from the buffer
@@ -154,14 +142,8 @@ function M.kubectl_apply_from_buffer()
         return
     end
 
-    -- Split namespaces into a table
-    local namespace_list = vim.split(namespaces, "\n", true)
-    if #namespace_list == 0 then
-        print("No namespaces available.")
-        return
-    end
-
-    vim.ui.select(namespace_list, { prompt = "Select Namespace:" }, function(choice)
+    -- Define Telescope picker to select namespace
+    vim.ui.select(vim.split(namespaces, "\n"), { prompt = "Select Namespace:" }, function(choice)
         if choice then
             local namespace = choice
             -- Fetch the current file path from the buffer
