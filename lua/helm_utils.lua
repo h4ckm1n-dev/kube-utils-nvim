@@ -288,10 +288,17 @@ function M.kubectl_apply_from_buffer()
 end
 
 function M.open_k9s()
-    -- Open K9s in a new terminal buffer
-    vim.cmd('vnew | terminal k9s')
-end
+    -- Calculate 80% of the current screen height
+    local height = math.floor(vim.o.lines * 0.8)
 
+    -- Create a floating window with a new terminal running K9s
+    vim.cmd('botright ' .. height .. 'new | setlocal nobuflisted | setlocal buftype=terminal | setlocal nonumber | setlocal norelativenumber | start term://k9s')
+    -- Resize the floating window to a suitable size
+    vim.cmd('resize ' .. height)
+    -- Set some additional options for a better appearance
+    vim.cmd('setlocal winblend=10') -- Adds transparency to the floating window
+    vim.cmd('setlocal winhighlight=Normal:Float') -- Applies a different highlight group for the window
+end
 
 -- Register Neovim commands
 function M.setup()
