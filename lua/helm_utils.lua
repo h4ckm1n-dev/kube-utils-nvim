@@ -288,25 +288,45 @@ function M.kubectl_apply_from_buffer()
 end
 
 function M.open_k9s()
-    -- Calculate 80% of the current screen height
-    local height = math.floor(vim.o.lines * 0.8)
-    local width = math.floor(vim.o.columns * 0.8)
+    -- Fetching available contexts
+    local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
+    if not contexts then
+        print(context_err or "Failed to fetch Kubernetes contexts.")
+        return
+    end
 
-    -- Set buftype globally
-    vim.cmd('setglobal buftype=terminal')
+    local context_list = vim.split(contexts, "\n", true)
+    if #context_list == 0 then
+        print("No Kubernetes contexts available.")
+        return
+    end
 
-    -- Calculate window position to center it
-    local top = math.floor((vim.o.lines - height) / 2)
-    local left = math.floor((vim.o.columns - width) / 2)
+    -- Use Telescope to pick a Kubernetes context
+    require("telescope.builtin").select_string({
+        prompt_title = "Select Kubernetes Context",
+        results = context_list,
+        entry_maker = function(entry)
+            return {
+                value = entry,
+                display = entry,
+                ordinal = entry,
+            }
+        end,
+        attach_mappings = function(prompt_bufnr, map)
+            map("i", "<CR>", function()
+                local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
+                require("telescope.actions").close(prompt_bufnr)
+                if context_selection then
+                    -- Use the selected context
+                    run_shell_command("kubectl config use-context " .. context_selection.value)
 
-    -- Create a floating window with a new terminal running K9s
-    vim.cmd(string.format('topleft %dnew | setlocal nobuflisted | setlocal nonumber | setlocal norelativenumber', top))
-    vim.fn.termopen('k9s')
-    -- Resize the floating window to a suitable size
-    vim.cmd(string.format('vertical resize %d | resize %d', width, height))
-    -- Set some additional options for a better appearance
-    vim.cmd('setlocal winblend=10') -- Adds transparency to the floating window
-    vim.cmd('setlocal winhighlight=Normal:Float') -- Applies a different highlight group for the window
+                    -- Open K9s in a new terminal buffer
+                    vim.cmd('vnew | terminal k9s')
+                end
+            end)
+            return true
+        end,
+    })
 end
 
 -- Register Neovim commands
