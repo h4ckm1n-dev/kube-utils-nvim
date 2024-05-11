@@ -287,7 +287,7 @@ function M.kubectl_apply_from_buffer()
     }):find()
 end
 
-function M.openK9s()
+function M.open_k9s()
     -- Define the command to run K9s
     local k9s_cmd = "k9s"
 
