@@ -288,9 +288,39 @@ function M.kubectl_apply_from_buffer()
 end
 
 function M.open_k9s()
-    -- Open K9s in a new terminal buffer
-    vim.cmd('vnew | terminal k9s')
+    -- Create a new floating window
+    local width = 0.8
+    local height = 0.8
+    local win_width = math.floor(vim.o.columns * width)
+    local win_height = math.floor(vim.o.lines * height)
+    local row = math.floor((vim.o.lines - win_height) / 2 - 1)
+    local col = math.floor((vim.o.columns - win_width) / 2)
+
+    -- Define the buffer content
+    local k9s_content = [[
+                          _    ___    _
+     /\  /\___ ___| |_ / _ \ _(_) __ _
+    / /_/ / __/ __| __| | | | | |/ _` |
+   / __  / (__\__ \ |_| |_| | | | (_| |
+   \/ /_/ \___|___/\__|\___/|_|_|\__, |
+                                  |___/
+    ]]
+    local bufnr = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(k9s_content, "\n"))
+
+    -- Create the floating window
+    local opts = {
+        relative = 'editor',
+        width = win_width,
+        height = win_height,
+        row = row,
+        col = col,
+        style = 'minimal',
+        border = 'single',
+    }
+    local win_id = vim.api.nvim_open_win(bufnr, true, opts)
 end
+
 
 -- Register Neovim commands
 function M.setup()
