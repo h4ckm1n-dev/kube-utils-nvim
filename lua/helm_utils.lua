@@ -28,11 +28,14 @@ end
 
 function M.helm_deploy_from_buffer()
     -- Fetch available namespaces using kubectl
-    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
+    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name '\\n'}")
     if not namespaces then
         print("Failed to fetch namespaces: " .. (err or ""))
         return
     end
+
+    -- Trim the last newline to prevent an empty entry
+    namespaces = namespaces:gsub("%s+$", "")
 
     -- Split namespaces into a table
     local namespace_list = vim.split(namespaces, "\n", true)
@@ -91,6 +94,7 @@ function M.helm_deploy_from_buffer()
         end,
     }):find()
 end
+
 
 function M.helm_dryrun_from_buffer()
     -- Fetch available namespaces using kubectl
