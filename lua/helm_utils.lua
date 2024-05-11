@@ -287,12 +287,17 @@ function M.kubectl_apply_from_buffer()
     }):find()
 end
 
+function M.open_k9s()
+    -- Open K9s in a new terminal buffer
+    vim.cmd('vnew | terminal k9s')
+end
 
 -- Register Neovim commands
 function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
 	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
 	vim.api.nvim_create_user_command("KubectlApplyFromBuffer", M.kubectl_apply_from_buffer, {})
+    vim.api.nvim_create_user_command("OpenK9s", M.open_k9s, {})
 end
 
 return M
