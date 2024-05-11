@@ -128,13 +128,23 @@ function M.remove_deployment()
     local delete_cmd = string.format("helm uninstall %s", release_name)
 
     -- Execute the command to delete the deployment
-    local result, err = run_shell_command(delete_cmd)
+    local handle, err = io.popen(delete_cmd, "r")
 
-    -- Check if deletion was successful
-    if result then
-        print("Deployment successfully removed.")
-    else
+    -- Check if command execution failed
+    if not handle then
         print("Failed to remove deployment:", err)
+        return
+    end
+
+    -- Read the output of the command
+    local output = handle:read("*a")
+    handle:close()
+
+    -- Check if the command executed successfully
+    if output and output ~= "" then
+        print("Failed to remove deployment:", output)
+    else
+        print("Deployment successfully removed.")
     end
 end
 
