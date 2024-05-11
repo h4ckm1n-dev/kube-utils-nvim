@@ -113,187 +113,143 @@ function M.helm_deploy_from_buffer()
 end
 
 function M.helm_dryrun_from_buffer()
-    -- Fetch available contexts
-    local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
-    if not contexts then
-        print(context_err or "Failed to fetch Kubernetes contexts.")
+    -- Fetch available namespaces using kubectl
+    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
+    if not namespaces then
+        print("Failed to fetch namespaces: " .. (err or ""))
         return
     end
 
-    local context_list = vim.split(contexts, "\n", true)
-    if #context_list == 0 then
-        print("No Kubernetes contexts available.")
-        return
+    -- Split namespaces into a table
+    local namespace_list = vim.split(namespaces, "\n", true)
+
+    -- Format namespaces into a table with separate entries
+    local formatted_namespaces = {}
+    for _, namespace in ipairs(namespace_list) do
+        table.insert(formatted_namespaces, { value = namespace, display = namespace, ordinal = namespace })
     end
 
-    -- Create a Telescope picker for selecting Kubernetes context
-    require("telescope.pickers").new({}, {
-        prompt_title = "Select Kubernetes Context",
-        finder = require("telescope.finders").new_table {
-            results = context_list,
-        },
-        sorter = require("telescope.config").values.generic_sorter({}),
-        attach_mappings = function(_, map)
-            map("i", "<CR>", function(prompt_bufnr)
-                local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
-                require("telescope.actions").close(prompt_bufnr)
-                if context_selection then
-                    -- Use the selected context
-                    run_shell_command("kubectl config use-context " .. context_selection.value)
+    -- Define Telescope picker to select namespace
+    vim.ui.select(formatted_namespaces, { prompt = "Select Namespace:" }, function(choice)
+        if choice then
+            local namespace = choice
+            -- Fetch the current file path from the buffer
+            local file_path = vim.api.nvim_buf_get_name(0)
+            if file_path == "" then
+                print("No file selected")
+                return
+            end
 
-                    -- Fetch available namespaces using kubectl and capture any error
-                    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
-                    if not namespaces then
-                        print("Failed to fetch namespaces: " .. (err or ""))
-                        return
-                    end
+            -- Parse file path to extract chart directory
+            local chart_directory = file_path:match("(.*/)") or ""
 
-                    -- Split the namespaces string into a list
-                    local namespace_list = vim.split(namespaces, "\n", true)
+            -- Prompt user for input regarding release name
+            local chart_name = vim.fn.input("Enter Release Name: ")
 
-                    -- Prepare formatted namespace entries for the picker
-                    local formatted_namespaces = {}
-                    for _, namespace in ipairs(namespace_list) do
-                        table.insert(formatted_namespaces, { value = namespace, display = namespace, ordinal = namespace })
-                    end
+            -- Construct the Helm dry run command using the buffer's file as the values file
+            local helm_cmd = string.format(
+                "helm install --dry-run %s %s --values %s -n %s --create-namespace 2>&1 | grep -v '^debug'",
+                chart_name,
+                chart_directory,
+                file_path,
+                namespace
+            )
 
-                    -- Use vim.ui.select to show a picker for namespace selection
-                    vim.ui.select(formatted_namespaces, { prompt = "Select Namespace:" }, function(choice)
-                        if choice then
-                            local namespace = choice.value
-                            -- Retrieve the file path of the current buffer
-                            local file_path = vim.api.nvim_buf_get_name(0)
-                            if file_path == "" then
-                                print("No file selected")
-                                return
-                            end
+            -- Execute the Helm dry run command
+            local result = run_shell_command(helm_cmd)
 
-                            -- Extract the chart directory from the file path
-                            local chart_directory = file_path:match("(.*/)") or ""
+            -- Open a new tab
+            vim.cmd("tabnew")
 
-                            -- Prompt for the Helm release name
-                            local chart_name = vim.fn.input("Enter Release Name: ")
+            -- Create a new buffer
+            local bufnr = vim.api.nvim_create_buf(false, true)
 
-                            -- Construct the Helm dry run command
-                            local helm_cmd = string.format(
-                                "helm install --dry-run %s %s --values %s -n %s --create-namespace 2>&1 | grep -v '^debug'",
-                                chart_name,
-                                chart_directory,
-                                file_path,
-                                namespace
-                            )
+            -- Set the filetype to YAML
+            vim.api.nvim_buf_set_option(bufnr, "filetype", "yaml")
 
-                            -- Execute the Helm dry run command and capture the output
-                            local result = run_shell_command(helm_cmd)
+            -- Print the output in the new buffer in Neovim
+            if result and result ~= "" then
+                vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
+            else
+                print("Dry run failed or no output returned.")
+            end
 
-                            -- Open a new tab and create a new buffer for output
-                            vim.cmd("tabnew")
-                            local bufnr = vim.api.nvim_create_buf(false, true)
-                            vim.api.nvim_buf_set_option(bufnr, "filetype", "yaml")
-
-                            -- Set the output in the buffer
-                            if result and result ~= "" then
-                                vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
-                            else
-                                print("Dry run failed or no output returned.")
-                            end
-
-                            -- Switch to the newly created buffer
-                            vim.api.nvim_set_current_buf(bufnr)
-                        else
-                            print("No namespace selected.")
-                        end
-                    end)
-                end
-            end)
-            return true
-        end,
-    }):find()
+            -- Switch to the new buffer
+            vim.api.nvim_set_current_buf(bufnr)
+        else
+            print("No namespace selected.")
+        end
+    end)
 end
 
-
 function M.kubectl_apply_from_buffer()
-    -- First, fetch available contexts
-    local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
-    if not contexts then
-        print(context_err or "Failed to fetch Kubernetes contexts.")
+    -- Fetch available namespaces using kubectl
+    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
+    if not namespaces then
+        print("Failed to fetch namespaces: " .. (err or ""))
         return
     end
 
-    local context_list = vim.split(contexts, "\n", true)
-    if #context_list == 0 then
-        print("No Kubernetes contexts available.")
-        return
+    -- Split namespaces into a table
+    local namespace_list = vim.split(namespaces, "\n", true)
+
+    -- Format namespaces into a table with separate entries
+    local formatted_namespaces = {}
+    for _, namespace in ipairs(namespace_list) do
+        table.insert(formatted_namespaces, { value = namespace, display = namespace, ordinal = namespace })
     end
 
-    -- Create a Telescope picker for selecting Kubernetes context
-    require("telescope.pickers").new({}, {
-        prompt_title = "Select Kubernetes Context",
-        finder = require("telescope.finders").new_table {
-            results = context_list,
-        },
-        sorter = require("telescope.config").values.generic_sorter({}),
-        attach_mappings = function(_, map)
-            map("i", "<CR>", function(prompt_bufnr)
-                local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
-                require("telescope.actions").close(prompt_bufnr)
-                if context_selection then
-                    -- Use the selected context
-                    run_shell_command("kubectl config use-context " .. context_selection.value)
+    -- Define Telescope picker to select namespace
+    vim.ui.select(formatted_namespaces, { prompt = "Select Namespace:" }, function(choice)
+        if choice then
+            local namespace = choice
+            -- Fetch the current file path from the buffer
+            local file_path = vim.api.nvim_buf_get_name(0)
+            if file_path == "" then
+                print("No file selected")
+                return
+            end
 
-                    -- Fetch available namespaces using kubectl
-                    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
-                    if not namespaces then
-                        print("Failed to fetch namespaces: " .. (err or ""))
-                        return
-                    end
+            -- Execute the kubectl apply command with specified namespace
+            local result = run_shell_command("kubectl apply -f " .. file_path .. " -n " .. namespace)
 
-                    -- Split namespaces into a table
-                    local namespace_list = vim.split(namespaces, "\n", true)
+            if result and result ~= "" then
+                print("kubectl apply successful: \n" .. result)
+            else
+                print("kubectl apply failed or no output returned.")
+            end
+        else
+            print("No namespace selected.")
+        end
+    end)
+end
 
-                    -- Format namespaces into a table with separate entries
-                    local formatted_namespaces = {}
-                    for _, namespace in ipairs(namespace_list) do
-                        table.insert(formatted_namespaces, { value = namespace, display = namespace, ordinal = namespace })
-                    end
+-- Function to switch Kubernetes contexts
+function M.switch_kubernetes_context()
+	local contexts, error_message = run_shell_command("kubectl config get-contexts -o name")
+	if not contexts then
+		print(error_message or "Failed to fetch Kubernetes contexts.")
+		return
+	end
 
-                    -- Define Telescope picker to select namespace
-                    require("telescope.pickers").new({}, {
-                        prompt_title = "Select Namespace",
-                        finder = require("telescope.finders").new_table {
-                            results = namespace_list,
-                        },
-                        sorter = require("telescope.config").values.generic_sorter({}),
-                        attach_mappings = function(_, map)
-                            map("i", "<CR>", function(ns_prompt_bufnr)
-                                local namespace_selection = require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
-                                require("telescope.actions").close(ns_prompt_bufnr)
-                                if namespace_selection then
-                                    local namespace = namespace_selection.value
-                                    local file_path = vim.api.nvim_buf_get_name(0)
-                                    if file_path == "" then
-                                        print("No file selected")
-                                        return
-                                    end
+	local context_list = vim.split(contexts, "\n", true)
+	if #context_list == 0 then
+		print("No Kubernetes contexts available.")
+		return
+	end
 
-                                    -- Execute the kubectl apply command with specified namespace
-                                    local result = run_shell_command("kubectl apply -f " .. file_path .. " -n " .. namespace)
-
-                                    if result and result ~= "" then
-                                        print("kubectl apply successful: \n" .. result)
-                                    else
-                                        print("kubectl apply failed or no output returned.")
-                                    end
-                                end
-                            end)
-                            return true
-                        end,
-                    }):find()
-                end
-            end)
-            return true
-        end,
-    }):find()
+	vim.ui.select(context_list, { prompt = "Select Kubernetes context:" }, function(choice)
+		if choice then
+			local result, switch_error_message = run_shell_command("kubectl config use-context " .. choice)
+			if result then
+				print("Switched to context: " .. choice)
+			else
+				print(switch_error_message or "Failed to switch context.")
+			end
+		else
+			print("No context selected.")
+		end
+	end)
 end
 
 -- Register Neovim commands
