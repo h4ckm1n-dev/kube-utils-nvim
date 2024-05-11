@@ -290,15 +290,20 @@ end
 function M.open_k9s()
     -- Calculate 80% of the current screen height
     local height = math.floor(vim.o.lines * 0.8)
+    local width = math.floor(vim.o.columns * 0.8)
 
     -- Set buftype globally
     vim.cmd('setglobal buftype=terminal')
 
+    -- Calculate window position to center it
+    local top = math.floor((vim.o.lines - height) / 2)
+    local left = math.floor((vim.o.columns - width) / 2)
+
     -- Create a floating window with a new terminal running K9s
-    vim.cmd('botright ' .. height .. 'new | setlocal nobuflisted | setlocal nonumber | setlocal norelativenumber')
+    vim.cmd(string.format('topleft %dnew | setlocal nobuflisted | setlocal nonumber | setlocal norelativenumber', top))
     vim.fn.termopen('k9s')
     -- Resize the floating window to a suitable size
-    vim.cmd('resize ' .. height)
+    vim.cmd(string.format('vertical resize %d | resize %d', width, height))
     -- Set some additional options for a better appearance
     vim.cmd('setlocal winblend=10') -- Adds transparency to the floating window
     vim.cmd('setlocal winhighlight=Normal:Float') -- Applies a different highlight group for the window
