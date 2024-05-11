@@ -13,6 +13,11 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 - **Open K9s:** Open the K9s Kubernetes CLI in a new terminal buffer.
 - **Open K9s Split:** Open the K9s Kubernetes CLI in a new split terminal buffer.
 
+![Capture d’écran du 2024-05-11 15-49-17](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/79b0b267-45d4-4afb-84e7-3ba45caedd9b)
+![Capture d’écran du 2024-05-11 15-50-02](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/c00eaf8c-f28b-444d-b62f-118b3ae0b354)
+![Uploading Capture d’écran du 2024-05-11 15-49-33.png…]()
+
+
 ## Installation
 Install the plugin using your preferred package manager (below is an example using lazy.nvim):
 ```lua
