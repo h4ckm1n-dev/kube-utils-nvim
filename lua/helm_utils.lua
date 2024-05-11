@@ -40,27 +40,20 @@ function M.helm_deploy_from_buffer()
     -- Prompt user for input regarding release name
     local chart_name = vim.fn.input("Enter Release Name: ")
 
-    -- Fetch available namespaces using kubectl
-    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
-    if not namespaces then
-        print("Failed to fetch namespaces: " .. (err or ""))
-        return
+    -- Define function to fetch available namespaces
+    local get_namespaces = function()
+        local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
+        if not namespaces then
+            print("Failed to fetch namespaces: " .. (err or ""))
+            return {}
+        end
+        return vim.split(namespaces, "%s+")
     end
-
-    -- Split namespaces into a table
-    local namespace_list = vim.split(namespaces, "%s+")
 
     -- Define Telescope picker to select namespace
     telescope.prompt {
         prompt_title = "Select Namespace",
         results_title = "Namespaces",
-        entry_maker = function(entry)
-            return {
-                value = entry,
-                display = entry,
-                ordinal = entry,
-            }
-        end,
         finder = telescope.make_builtin {
             prompt_title = "Select Namespace",
             results_title = "Namespaces",
@@ -74,6 +67,7 @@ function M.helm_deploy_from_buffer()
         },
         sorter = telescope.get_generic_fuzzy_sorter(),
         attach_mappings = function(_, map)
+            -- Fetch available namespaces using kubectl when user selects namespace
             map("i", "<CR>", function(prompt_bufnr)
                 local selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
                 require("telescope.actions").close(prompt_bufnr)
@@ -100,10 +94,7 @@ function M.helm_deploy_from_buffer()
             return true
         end,
         previewer = false,
-        entry_format = function(entry)
-            return entry
-        end,
-        results = namespace_list,
+        results = get_namespaces,  -- Use function to fetch namespaces dynamically
     }
 end
 
@@ -210,27 +201,10 @@ function M.kubectl_apply_from_buffer()
         return
     end
 
-    -- Fetch available namespaces using kubectl
-    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
-    if not namespaces then
-        print("Failed to fetch namespaces: " .. (err or ""))
-        return
-    end
-
-    -- Split namespaces into a table
-    local namespace_list = vim.split(namespaces, "%s+")
-
     -- Define Telescope picker to select namespace
     telescope.prompt {
         prompt_title = "Select Namespace",
         results_title = "Namespaces",
-        entry_maker = function(entry)
-            return {
-                value = entry,
-                display = entry,
-                ordinal = entry,
-            }
-        end,
         finder = telescope.make_builtin {
             prompt_title = "Select Namespace",
             results_title = "Namespaces",
@@ -244,11 +218,20 @@ function M.kubectl_apply_from_buffer()
         },
         sorter = telescope.get_generic_fuzzy_sorter(),
         attach_mappings = function(_, map)
+            -- Fetch available namespaces using kubectl when user selects namespace
             map("i", "<CR>", function(prompt_bufnr)
                 local selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
                 require("telescope.actions").close(prompt_bufnr)
                 if selection then
                     local namespace = selection.value
+
+                    -- Fetch available namespaces using kubectl
+                    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
+                    if not namespaces then
+                        print("Failed to fetch namespaces: " .. (err or ""))
+                        return
+                    end
+
                     -- Execute the kubectl apply command with specified namespace
                     local result = run_shell_command("kubectl apply -f " .. file_path .. " -n " .. namespace)
 
@@ -262,12 +245,9 @@ function M.kubectl_apply_from_buffer()
             return true
         end,
         previewer = false,
-        entry_format = function(entry)
-            return entry
-        end,
-        results = namespace_list,
     }
 end
+
 
 -- Function to switch Kubernetes contexts
 function M.switch_kubernetes_context()
