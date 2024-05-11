@@ -27,15 +27,12 @@ local function run_shell_command(cmd)
 end
 
 function M.helm_deploy_from_buffer()
-    -- Fetch available namespaces using kubectl
-    local namespaces, err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name '\\n'}")
-    if not namespaces then
-        print("Failed to fetch namespaces: " .. (err or ""))
+    -- Fetch available namespaces using kubectl with awk for formatting
+    local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
+    if not namespaces or namespaces == "" then
+        print("Failed to fetch namespaces: " .. (err or "No namespaces found."))
         return
     end
-
-    -- Trim the last newline to prevent an empty entry
-    namespaces = namespaces:gsub("%s+$", "")
 
     -- Split namespaces into a table
     local namespace_list = vim.split(namespaces, "\n", true)
@@ -43,7 +40,9 @@ function M.helm_deploy_from_buffer()
     -- Create a table to hold individual namespace entries
     local formatted_namespaces = {}
     for _, namespace in ipairs(namespace_list) do
-        table.insert(formatted_namespaces, { value = namespace, display = namespace })
+        if namespace ~= "" then  -- Ensure no empty lines are included
+            table.insert(formatted_namespaces, { value = namespace, display = namespace })
+        end
     end
 
     -- Create a Telescope picker for selecting namespaces
@@ -59,20 +58,13 @@ function M.helm_deploy_from_buffer()
                 require("telescope.actions").close(prompt_bufnr)
                 if selection then
                     local namespace = selection.value
-                    -- Fetch the current file path from the buffer
                     local file_path = vim.api.nvim_buf_get_name(0)
                     if file_path == "" then
                         print("No file selected")
                         return
                     end
-
-                    -- Parse file path to extract chart directory
-                    local chart_directory = file_path:match("(.*/)") or ""
-
-                    -- Prompt user for input regarding release name
+                    local chart_directory = file_path:match("(.*/)")
                     local chart_name = vim.fn.input("Enter Release Name: ")
-
-                    -- Construct the Helm command using the buffer's file as the values file
                     local helm_cmd = string.format(
                         "helm upgrade --install %s %s --values %s -n %s --create-namespace",
                         chart_name,
@@ -80,8 +72,6 @@ function M.helm_deploy_from_buffer()
                         file_path,
                         namespace
                     )
-
-                    -- Execute the Helm command
                     local result, err = run_shell_command(helm_cmd)
                     if result and result ~= "" then
                         print("Deployment successful: \n" .. result)
@@ -94,6 +84,7 @@ function M.helm_deploy_from_buffer()
         end,
     }):find()
 end
+
 
 
 function M.helm_dryrun_from_buffer()
