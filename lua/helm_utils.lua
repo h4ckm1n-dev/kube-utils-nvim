@@ -38,9 +38,15 @@ function M.helm_deploy_from_buffer()
     local namespace_list = vim.split(namespaces, "\n", true)
 
     -- Create a Telescope picker for selecting namespaces
-    require("telescope.builtin").select {
-        prompt = "Select Namespace:",
+    local picker = require("telescope.finders").new_table {
         results = namespace_list,
+    }
+
+    -- Prompt the user to select a namespace
+    require("telescope.pickers").new({}, {
+        prompt_title = "Select Namespace",
+        finder = picker,
+        sorter = require("telescope.config").values.generic_sorter({}),
         attach_mappings = function(_, map)
             map("i", "<CR>", function(prompt_bufnr)
                 local selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
@@ -80,8 +86,9 @@ function M.helm_deploy_from_buffer()
             end)
             return true
         end,
-    }
+    }):find()
 end
+
 
 
 function M.helm_dryrun_from_buffer()
