@@ -183,7 +183,18 @@ function M.helm_dryrun_from_buffer()
                                     )
                                     local result = run_shell_command(helm_cmd)
                                     if result and result ~= "" then
-                                        print("Dry run successful: \n" .. result)
+                                        -- Open a new buffer and display the result
+                                        vim.cmd("new")  -- Open a new buffer in a new window
+                                        local bufnr = vim.api.nvim_get_current_buf()
+                                        vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
+                                        vim.api.nvim_buf_set_option(bufnr, "filetype", "yaml")
+                                        -- Attach 'yamlls' for linting if it is available
+                                        local clients = vim.lsp.get_active_clients()
+                                        for _, client in ipairs(clients) do
+                                            if client.name == "yamlls" then
+                                                vim.lsp.buf_attach_client(bufnr, client.id)
+                                            end
+                                        end
                                     else
                                         print("Dry run failed: " .. (err or "Unknown error"))
                                     end
@@ -198,7 +209,6 @@ function M.helm_dryrun_from_buffer()
         end,
     }):find()
 end
-
 
 function M.kubectl_apply_from_buffer()
     -- First, fetch available contexts
