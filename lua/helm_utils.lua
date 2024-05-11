@@ -287,8 +287,19 @@ function M.kubectl_apply_from_buffer()
     }):find()
 end
 
-function M.open_k9s()
-    -- Create a new floating window
+function M.openK9s()
+    -- Define the command to run K9s
+    local k9s_cmd = "k9s"
+
+    -- Create a new buffer and set its content to the output of K9s
+    local bufnr = vim.api.nvim_create_buf(false, true)
+    local job_id = vim.fn.termopen(k9s_cmd, {
+        on_stdout = function(_, data)
+            vim.api.nvim_buf_set_lines(bufnr, -1, -1, true, vim.split(data, "\n"))
+        end
+    })
+
+    -- Create a floating window to display the buffer
     local width = 0.8
     local height = 0.8
     local win_width = math.floor(vim.o.columns * width)
@@ -296,19 +307,6 @@ function M.open_k9s()
     local row = math.floor((vim.o.lines - win_height) / 2 - 1)
     local col = math.floor((vim.o.columns - win_width) / 2)
 
-    -- Define the buffer content
-    local k9s_content = [[
-                          _    ___    _
-     /\  /\___ ___| |_ / _ \ _(_) __ _
-    / /_/ / __/ __| __| | | | | |/ _` |
-   / __  / (__\__ \ |_| |_| | | | (_| |
-   \/ /_/ \___|___/\__|\___/|_|_|\__, |
-                                  |___/
-    ]]
-    local bufnr = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(k9s_content, "\n"))
-
-    -- Create the floating window
     local opts = {
         relative = 'editor',
         width = win_width,
@@ -319,6 +317,10 @@ function M.open_k9s()
         border = 'single',
     }
     local win_id = vim.api.nvim_open_win(bufnr, true, opts)
+
+    -- Resize terminal buffer
+    vim.api.nvim_win_set_height(win_id, win_height)
+    vim.api.nvim_win_set_width(win_id, win_width)
 end
 
 
