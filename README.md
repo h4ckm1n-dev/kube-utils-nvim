@@ -18,7 +18,7 @@ Install the plugin using your preferred package manager (below is an example usi
 ```lua
 return {
     {
-        "h4ckm1n-dev/helm-utils-nvim",
+        "h4ckm1n-dev/kube-utils-nvim",
         event = "BufReadPost",
         config = function()
             require("helm_utils").setup()
@@ -30,12 +30,13 @@ Additionaly you can create a witch-key mapping to use the commands:
 ```lua
 -- Helm keybindings
 local helm_mappings = {
-	h = {
-		name = "Helm", -- This sets a label for all helm-related keybindings
-		c = { "<cmd>HelmDeployFromBuffer<CR>", "Deploy Buffer to Context" },
-		d = { "<cmd>HelmDryRun<CR>", "DryRun Buffer" },
-        	a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
-		k = { "<cmd>KubeSwitchContext<CR>", "Switch Kubernetes Context" },
+	k = {
+		name = "Kubernetes", -- This sets a label for all helm-related keybindings
+		c = { "<cmd>HelmDeployFromBuffer<CR>", "Helm Deploy Buffer to Context" },
+		d = { "<cmd>HelmDryRun<CR>", "helm DryRun Buffer" },
+    a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
+    k = { "<cmd>OpenK9s<CR>", "View Cluster In K9s" },
+    K = { "<cmd>OpenK9sSplit<CR>", "Split View K9s" }, 
 	},
 }
 
