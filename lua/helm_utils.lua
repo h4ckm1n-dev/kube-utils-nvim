@@ -295,14 +295,14 @@ function M.open_k9s()
     vim.cmd('setglobal buftype=terminal')
 
     -- Create a floating window with a new terminal running K9s
-    vim.cmd('botright ' .. height .. 'new | setlocal nobuflisted | setlocal nonumber | setlocal norelativenumber | start term://k9s')
+    vim.cmd('botright ' .. height .. 'new | setlocal nobuflisted | setlocal nonumber | setlocal norelativenumber')
+    vim.fn.termopen('k9s')
     -- Resize the floating window to a suitable size
     vim.cmd('resize ' .. height)
     -- Set some additional options for a better appearance
     vim.cmd('setlocal winblend=10') -- Adds transparency to the floating window
     vim.cmd('setlocal winhighlight=Normal:Float') -- Applies a different highlight group for the window
 end
-
 
 -- Register Neovim commands
 function M.setup()
