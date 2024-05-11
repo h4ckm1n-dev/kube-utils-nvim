@@ -154,7 +154,7 @@ function M.helm_dryrun_from_buffer()
                         return
                     end
 
-                    -- Create a Telescope picker for selecting namespace
+                    -- Create a Telescope picker for selecting namespaces
                     require("telescope.pickers").new({}, {
                         prompt_title = "Select Namespace",
                         finder = require("telescope.finders").new_table {
@@ -199,6 +199,7 @@ function M.helm_dryrun_from_buffer()
     }):find()
 end
 
+
 function M.kubectl_apply_from_buffer()
     -- First, fetch available contexts
     local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
@@ -228,10 +229,10 @@ function M.kubectl_apply_from_buffer()
                     -- Use the selected context
                     run_shell_command("kubectl config use-context " .. context_selection.value)
 
-                    -- Now fetch namespaces
-                    local namespaces, namespace_err = run_shell_command("kubectl get namespaces --output=jsonpath={.items[*].metadata.name}")
+                    -- Now fetch namespaces after context is selected
+                    local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
                     if not namespaces then
-                        print("Failed to fetch namespaces: " .. (namespace_err or "No namespaces found."))
+                        print("Failed to fetch namespaces: " .. (err or "No namespaces found."))
                         return
                     end
 
@@ -241,7 +242,7 @@ function M.kubectl_apply_from_buffer()
                         return
                     end
 
-                    -- Create a Telescope picker for selecting namespace
+                    -- Create a Telescope picker for selecting namespaces
                     require("telescope.pickers").new({}, {
                         prompt_title = "Select Namespace",
                         finder = require("telescope.finders").new_table {
@@ -278,6 +279,7 @@ function M.kubectl_apply_from_buffer()
         end,
     }):find()
 end
+
 
 -- Register Neovim commands
 function M.setup()
