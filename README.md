@@ -10,13 +10,15 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 - **Helm Dry Run:** Simulate Helm chart installations without actually deploying.
 - **Kubectl Apply:** Apply Kubernetes manifests from your buffer.
 - **Kubernetes Context Switching:** Quickly switch between Kubernetes contexts.
+- **Open K9s:** Open the K9s Kubernetes CLI in a new terminal buffer.
+- **Open K9s Split:** Open the K9s Kubernetes CLI in a new split terminal buffer.
 
 ## Installation
-Install the plugin using your preferred package manager (bellow an exemple using lazy.nvim):
-```bash
+Install the plugin using your preferred package manager (below is an example using lazy.nvim):
+```lua
 return {
     {
-        "h4ckm1n-dev/helm-utils-nvim",
+        "h4ckm1n-dev/kube-utils-nvim",
         event = "BufReadPost",
         config = function()
             require("helm_utils").setup()
@@ -28,12 +30,13 @@ Additionaly you can create a witch-key mapping to use the commands:
 ```lua
 -- Helm keybindings
 local helm_mappings = {
-	h = {
-		name = "Helm", -- This sets a label for all helm-related keybindings
-		c = { "<cmd>HelmDeployFromBuffer<CR>", "Deploy Buffer to Context" },
-		d = { "<cmd>HelmDryRun<CR>", "DryRun Buffer" },
-        	a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
-		k = { "<cmd>KubeSwitchContext<CR>", "Switch Kubernetes Context" },
+	k = {
+		name = "Kubernetes", -- This sets a label for all helm-related keybindings
+		c = { "<cmd>HelmDeployFromBuffer<CR>", "Helm Deploy Buffer to Context" },
+		d = { "<cmd>HelmDryRun<CR>", "helm DryRun Buffer" },
+    a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
+    k = { "<cmd>OpenK9s<CR>", "View Cluster In K9s" },
+    K = { "<cmd>OpenK9sSplit<CR>", "Split View K9s" }, 
 	},
 }
 
@@ -49,6 +52,8 @@ wk.register(helm_mappings, { prefix = "<leader>" })
 - **Helm Dry Run:** Use `:HelmDryRun` to simulate the Helm chart installation from the current buffer. You'll be prompted for the release name and namespace, and a new tab will open showing the simulated output.
 - **Kubectl Apply:** Use `:KubectlApplyFromBuffer` to apply Kubernetes manifests from the current buffer.
 - **Kubernetes Context Switching:** Use `:KubeSwitchContext` to switch between Kubernetes contexts.
+- **Open K9s:** Use `:OpenK9s` to open the K9s Kubernetes CLI in a new terminal buffer.
+- **Open K9s Split:** Use `:OpenK9sSplit` to open the K9s Kubernetes CLI in a new split terminal buffer.
 
 ## Requirements
 Neovim 0.9.0 or higher
