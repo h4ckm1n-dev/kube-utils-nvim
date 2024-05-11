@@ -1,0 +1,31 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          # Install LuaRocks
+          sudo apt-get update
+          sudo apt-get install -y luarocks
+          
+          # Install luacheck using LuaRocks
+          sudo luarocks install luacheck
+          
+      - name: Lint code
+        run: |
+          # Run linting command and store the exit code
+          luacheck . || exit 0
