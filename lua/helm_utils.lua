@@ -35,7 +35,7 @@ function M.helm_deploy_from_buffer()
 	local chart_directory = file_path:match("(.*/)") or ""
 
 	-- Prompt user for input regarding release name and namespace
-	local chart_name = vim.fn.input("Enter Realese Name: ")
+	local chart_name = vim.fn.input("Enter Release Name: ")
 	local namespace = vim.fn.input("Enter Namespace: ")
 
 	-- Construct the Helm command using the buffer's file as the values file
@@ -48,11 +48,11 @@ function M.helm_deploy_from_buffer()
 	)
 
 	-- Execute the Helm command
-	local result = run_shell_command(helm_cmd)
+	local result, err = run_shell_command(helm_cmd)
 	if result and result ~= "" then
 		print("Deployment successful: \n" .. result)
 	else
-		print("Deployment failed or no output returned.")
+		print("Deployment failed: " .. (err or "Unknown error"))
 	end
 end
 
