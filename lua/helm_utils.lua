@@ -4,26 +4,26 @@ local M = {}
 local telescope = require("telescope.builtin")
 
 local function run_shell_command(cmd)
-	-- Attempt to open a pipe to run the command
-	local handle, err = io.popen(cmd, "r")
-	if not handle then
-		-- If the handle is nil, print the error and return a default message
-		print("Failed to run command: " .. cmd .. "\nError: " .. tostring(err))
-		return nil, "Error running command: " .. tostring(err)
-	end
+    -- Attempt to open a pipe to run the command
+    local handle, err = io.popen(cmd, "r")
+    if not handle then
+        -- If the handle is nil, print the error and return a default message
+        print("Failed to run command: " .. cmd .. "\nError: " .. tostring(err))
+        return nil, "Error running command: " .. tostring(err)
+    end
 
-	-- Read the output of the command
-	local output = handle:read("*a")
-	-- Always ensure the handle is closed to avoid resource leaks
-	handle:close()
+    -- Read the output of the command
+    local output = handle:read("*a")
+    -- Always ensure the handle is closed to avoid resource leaks
+    handle:close()
 
-	-- Check if the output is nil or empty
-	if not output or output == "" then
-		return nil, "Command returned no output"
-	end
+    -- Check if the output is nil or empty
+    if not output or output == "" then
+        return nil, "Command returned no output"
+    end
 
-	-- Return the output normally
-	return output
+    -- Return the output normally
+    return output
 end
 
 function M.helm_deploy_from_buffer()
@@ -76,7 +76,8 @@ function M.helm_deploy_from_buffer()
                         sorter = require("telescope.config").values.generic_sorter({}),
                         attach_mappings = function(_, map)
                             map("i", "<CR>", function(ns_prompt_bufnr)
-                                local namespace_selection = require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
+                                local namespace_selection = require("telescope.actions.state").get_selected_entry(
+                                ns_prompt_bufnr)
                                 require("telescope.actions").close(ns_prompt_bufnr)
                                 if namespace_selection then
                                     local namespace = namespace_selection.value
@@ -163,7 +164,8 @@ function M.helm_dryrun_from_buffer()
                         sorter = require("telescope.config").values.generic_sorter({}),
                         attach_mappings = function(_, map)
                             map("i", "<CR>", function(ns_prompt_bufnr)
-                                local namespace_selection = require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
+                                local namespace_selection = require("telescope.actions.state").get_selected_entry(
+                                ns_prompt_bufnr)
                                 require("telescope.actions").close(ns_prompt_bufnr)
                                 if namespace_selection then
                                     local namespace = namespace_selection.value
@@ -182,7 +184,7 @@ function M.helm_dryrun_from_buffer()
                                         namespace
                                     )
                                     local result = run_shell_command(helm_cmd)
-                                    
+
                                     -- Open a new tab and create a buffer
                                     vim.cmd("tabnew")
                                     local bufnr = vim.api.nvim_create_buf(false, true)
@@ -205,7 +207,6 @@ function M.helm_dryrun_from_buffer()
         end,
     }):find()
 end
-
 
 function M.kubectl_apply_from_buffer()
     -- First, fetch available contexts
@@ -258,7 +259,8 @@ function M.kubectl_apply_from_buffer()
                         sorter = require("telescope.config").values.generic_sorter({}),
                         attach_mappings = function(ns_prompt_bufnr, map)
                             map("i", "<CR>", function()
-                                local namespace_selection = require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
+                                local namespace_selection = require("telescope.actions.state").get_selected_entry(
+                                ns_prompt_bufnr)
                                 require("telescope.actions").close(ns_prompt_bufnr)
                                 if namespace_selection then
                                     local namespace = namespace_selection.value
@@ -269,7 +271,8 @@ function M.kubectl_apply_from_buffer()
                                     end
 
                                     -- Execute the kubectl apply command with specified namespace
-                                    local result, apply_err = run_shell_command("kubectl apply -f " .. file_path .. " -n " .. namespace)
+                                    local result, apply_err = run_shell_command("kubectl apply -f " ..
+                                    file_path .. " -n " .. namespace)
                                     if result and result ~= "" then
                                         print("kubectl apply successful: \n" .. result)
                                     else
@@ -288,47 +291,15 @@ function M.kubectl_apply_from_buffer()
 end
 
 function M.open_k9s()
-    -- Fetching available contexts
-    local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
-    if not contexts then
-        print(context_err or "Failed to fetch Kubernetes contexts.")
-        return
-    end
-
-    local context_list = vim.split(contexts, "\n", true)
-    if #context_list == 0 then
-        print("No Kubernetes contexts available.")
-        return
-    end
-
-    -- Use Telescope to pick a Kubernetes context
-    require("telescope.builtin").find_files({
-        prompt_title = "Select Kubernetes Context",
-        cwd = "/tmp",  -- Setting cwd to avoid actual file search
-        results = context_list,
-        attach_mappings = function(prompt_bufnr, map)
-            map("i", "<CR>", function()
-                local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
-                require("telescope.actions").close(prompt_bufnr)
-                if context_selection then
-                    -- Use the selected context
-                    run_shell_command("kubectl config use-context " .. context_selection.value)
-
-                    -- Open K9s in a new terminal buffer
-                    vim.cmd('vnew | terminal k9s')
-                end
-            end)
-            return true
-        end,
-    })
+    -- Open K9s in a new terminal buffer
+    vim.cmd('vnew | terminal k9s')
 end
-
 
 -- Register Neovim commands
 function M.setup()
-	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
-	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
-	vim.api.nvim_create_user_command("KubectlApplyFromBuffer", M.kubectl_apply_from_buffer, {})
+    vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
+    vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
+    vim.api.nvim_create_user_command("KubectlApplyFromBuffer", M.kubectl_apply_from_buffer, {})
     vim.api.nvim_create_user_command("OpenK9s", M.open_k9s, {})
 end
 
