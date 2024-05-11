@@ -26,7 +26,7 @@ local function run_shell_command(cmd)
 	return output
 end
 
-function M.helm_deploy_from_buffer()
+function M.helm_dryrun_from_buffer()
     -- First, fetch available contexts
     local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
     if not contexts then
@@ -54,6 +54,7 @@ function M.helm_deploy_from_buffer()
                 if context_selection then
                     -- Use the selected context
                     run_shell_command("kubectl config use-context " .. context_selection.value)
+
                     -- Now fetch namespaces after context is selected
                     local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
                     if not namespaces then
@@ -88,18 +89,25 @@ function M.helm_deploy_from_buffer()
                                     local chart_directory = file_path:match("(.*/)")
                                     local chart_name = vim.fn.input("Enter Release Name: ")
                                     local helm_cmd = string.format(
-                                        "helm upgrade --install %s %s --values %s -n %s --create-namespace",
+                                        "helm install --dry-run %s %s --values %s -n %s --create-namespace",
                                         chart_name,
                                         chart_directory,
                                         file_path,
                                         namespace
                                     )
-                                    local result, helm_err = run_shell_command(helm_cmd)
+                                    local result = run_shell_command(helm_cmd)
+                                    
+                                    -- Open a new tab and create a buffer
+                                    vim.cmd("tabnew")
+                                    local bufnr = vim.api.nvim_create_buf(false, true)
+                                    vim.api.nvim_buf_set_option(bufnr, "filetype", "yaml")
                                     if result and result ~= "" then
-                                        print("Deployment successful: \n" .. result)
+                                        vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
                                     else
-                                        print("Deployment failed: " .. (helm_err or "Unknown error"))
+                                        print("Dry run failed: " .. (err or "Unknown error"))
                                     end
+                                    -- Switch to the new buffer
+                                    vim.api.nvim_set_current_buf(bufnr)
                                 end
                             end)
                             return true
@@ -111,6 +119,7 @@ function M.helm_deploy_from_buffer()
         end,
     }):find()
 end
+
 
 function M.helm_dryrun_from_buffer()
     -- First, fetch available contexts
