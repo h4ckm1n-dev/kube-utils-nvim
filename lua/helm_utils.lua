@@ -149,8 +149,8 @@ function M.helm_deploy_from_buffer()
 									results = namespace_list,
 								}),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(_, map)
-									map("i", function(ns_prompt_bufnr)
+								attach_mappings = function(_, map1)
+									map1("i", function(ns_prompt_bufnr)
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
@@ -346,8 +346,8 @@ function M.helm_dryrun_from_buffer()
 									results = namespace_list,
 								}),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(_, map)
-									map("i", "<CR>", function(ns_prompt_bufnr)
+								attach_mappings = function(_, map1)
+									map1("i", "<CR>", function(ns_prompt_bufnr)
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
@@ -445,8 +445,8 @@ function M.kubectl_apply_from_buffer()
 									results = namespace_list,
 								}),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(ns_prompt_bufnr, map)
-									map("i", "<CR>", function()
+								attach_mappings = function(ns_prompt_bufnr, map1)
+									map1("i", "<CR>", function()
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
@@ -540,7 +540,7 @@ function M.open_k9s()
 	-- Define the terminal command to run K9s
 	local k9s_cmd = "k9s"
 
-	-- Create a new floating window
+	-- Calculate window dimensions and position based on the editor's size
 	local width = 0.8 -- Width percentage of the screen
 	local height = 0.8 -- Height percentage of the screen
 	local x = (1 - width) / 2
@@ -554,22 +554,17 @@ function M.open_k9s()
 		style = "minimal",
 	}
 
-	-- Create a new terminal buffer inside the floating window
+	-- Create a new terminal buffer and open it in a floating window
 	local bufnr = vim.api.nvim_create_buf(false, true)
-	local win_id = vim.api.nvim_open_win(bufnr, true, opts)
+	vim.api.nvim_open_win(bufnr, true, opts)
 
-	-- Run K9s in the terminal buffer
+	-- Run K9s in the newly created terminal buffer
 	vim.fn.termopen(k9s_cmd)
 
-	-- Set key mappings to navigate the floating window
+	-- Set key mappings to manage the floating window and interactions
 	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
 	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
-
-	-- Unbind Ctrl+C
-	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<Nop>", { noremap = true, silent = true })
-
-	-- Map Ctrl+C to exit insert mode
-	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<C-\\><C-n>:stopinsert<CR>", { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<C-\\><C-n>", { noremap = true, silent = true })
 end
 
 function M.open_k9s_split()
@@ -579,10 +574,7 @@ function M.open_k9s_split()
 	-- Set up key mapping to quit the terminal window gracefully
 	vim.api.nvim_buf_set_keymap(0, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
 	vim.api.nvim_buf_set_keymap(0, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
-	-- Unbind Ctrl+X
-	vim.api.nvim_buf_set_keymap(0, "t", "<C-c>", "<Nop>", { noremap = true, silent = true })
-	-- Map Ctrl+C to exit insert mode
-	vim.api.nvim_buf_set_keymap(0, "t", "<C-c>", "<C-\\><C-n>:stopinsert<CR>", { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(0, "t", "<C-c>", "<C-\\><C-n>", { noremap = true, silent = true })
 end
 
 -- Register Neovim commands
