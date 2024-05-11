@@ -34,8 +34,17 @@ function M.helm_deploy_from_buffer()
         return
     end
 
+    -- Split namespaces into a table
+    local namespace_list = vim.split(namespaces, "\n", true)
+
+    -- Format namespaces into a table with separate entries
+    local formatted_namespaces = {}
+    for _, namespace in ipairs(namespace_list) do
+        table.insert(formatted_namespaces, { value = namespace, display = namespace, ordinal = namespace })
+    end
+
     -- Define Telescope picker to select namespace
-    vim.ui.select(vim.split(namespaces, "\n"), { prompt = "Select Namespace:" }, function(choice)
+    vim.ui.select(formatted_namespaces, { prompt = "Select Namespace:" }, function(choice)
         if choice then
             local namespace = choice
             -- Fetch the current file path from the buffer
@@ -81,8 +90,17 @@ function M.helm_dryrun_from_buffer()
         return
     end
 
+    -- Split namespaces into a table
+    local namespace_list = vim.split(namespaces, "\n", true)
+
+    -- Format namespaces into a table with separate entries
+    local formatted_namespaces = {}
+    for _, namespace in ipairs(namespace_list) do
+        table.insert(formatted_namespaces, { value = namespace, display = namespace, ordinal = namespace })
+    end
+
     -- Define Telescope picker to select namespace
-    vim.ui.select(vim.split(namespaces, "\n"), { prompt = "Select Namespace:" }, function(choice)
+    vim.ui.select(formatted_namespaces, { prompt = "Select Namespace:" }, function(choice)
         if choice then
             local namespace = choice
             -- Fetch the current file path from the buffer
@@ -142,8 +160,17 @@ function M.kubectl_apply_from_buffer()
         return
     end
 
+    -- Split namespaces into a table
+    local namespace_list = vim.split(namespaces, "\n", true)
+
+    -- Format namespaces into a table with separate entries
+    local formatted_namespaces = {}
+    for _, namespace in ipairs(namespace_list) do
+        table.insert(formatted_namespaces, { value = namespace, display = namespace, ordinal = namespace })
+    end
+
     -- Define Telescope picker to select namespace
-    vim.ui.select(vim.split(namespaces, "\n"), { prompt = "Select Namespace:" }, function(choice)
+    vim.ui.select(formatted_namespaces, { prompt = "Select Namespace:" }, function(choice)
         if choice then
             local namespace = choice
             -- Fetch the current file path from the buffer
