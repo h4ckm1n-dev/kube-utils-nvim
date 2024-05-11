@@ -12,6 +12,7 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 - **Kubernetes Context Switching:** Quickly switch between Kubernetes contexts.
 - **Open K9s:** Open the K9s Kubernetes CLI in a new terminal buffer.
 - **Open K9s Split:** Open the K9s Kubernetes CLI in a new split terminal buffer.
+
 ![Capture d’écran du 2024-05-11 15-50-02](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/c00eaf8c-f28b-444d-b62f-118b3ae0b354)
 ![Capture d’écran du 2024-05-11 15-49-17](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/79b0b267-45d4-4afb-84e7-3ba45caedd9b)
 ![Capture d’écran du 2024-05-11 15-49-33](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/9c6829fd-c79d-4a0e-9f3c-7fa60ec6a516)
@@ -36,10 +37,11 @@ local helm_mappings = {
 	k = {
 		name = "Kubernetes", -- This sets a label for all helm-related keybindings
 		c = { "<cmd>HelmDeployFromBuffer<CR>", "Helm Deploy Buffer to Context" },
+    r = { "<cmd>RemoveDeployment<CR>", "Helm Remove Deployment From Buffer" },
 		d = { "<cmd>HelmDryRun<CR>", "helm DryRun Buffer" },
-    		a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
-    		k = { "<cmd>OpenK9s<CR>", "View Cluster In K9s" },
-    		K = { "<cmd>OpenK9sSplit<CR>", "Split View K9s" }, 
+    a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply from buffer" },
+    k = { "<cmd>OpenK9s<CR>", "View Cluster In K9s" },
+    K = { "<cmd>OpenK9sSplit<CR>", "Split View K9s" }, 
 	},
 }
 
@@ -52,6 +54,7 @@ wk.register(helm_mappings, { prefix = "<leader>" })
 
 ## Usage
 - **Helm Deployment:** Use `:HelmDeployFromBuffer` to deploy the Helm chart from the current buffer. You'll be prompted for the release name and namespace.
+- ** Helm Remove Deployment: Use `Removedeployment`to remove a deployment, You'll be prompted for the release name and namespace
 - **Helm Dry Run:** Use `:HelmDryRun` to simulate the Helm chart installation from the current buffer. You'll be prompted for the release name and namespace, and a new tab will open showing the simulated output.
 - **Kubectl Apply:** Use `:KubectlApplyFromBuffer` to apply Kubernetes manifests from the current buffer.
 - **Kubernetes Context Switching:** Use `:KubeSwitchContext` to switch between Kubernetes contexts.

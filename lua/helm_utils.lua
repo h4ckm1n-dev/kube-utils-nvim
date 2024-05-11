@@ -114,6 +114,63 @@ function M.helm_deploy_from_buffer()
 		:find()
 end
 
+function M.remove_deployment()
+    -- First, fetch available namespaces
+    local namespaces, ns_err = run_shell_command("kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'")
+    if not namespaces then
+        print(ns_err or "Failed to fetch namespaces.")
+        return
+    end
+
+    local namespace_list = vim.split(namespaces, " ", true)
+    if #namespace_list == 0 then
+        print("No namespaces available.")
+        return
+    end
+
+    -- Create a Telescope picker for selecting the namespace
+    require("telescope.pickers")
+        .new({}, {
+            prompt_title = "Select Namespace",
+            finder = require("telescope.finders").new_table({
+                results = namespace_list,
+            }),
+            sorter = require("telescope.config").values.generic_sorter({}),
+            attach_mappings = function(_, map)
+                map("i", "<CR>", function(prompt_bufnr)
+                    local namespace_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
+                    require("telescope.actions").close(prompt_bufnr)
+                    if namespace_selection then
+                        local namespace = namespace_selection.value
+                        local release_name = vim.fn.input("Enter the release name to remove: ")
+
+                        -- Check if release name is provided
+                        if release_name == "" then
+                            print("Release name is required.")
+                            return
+                        end
+
+                        -- Construct the command to delete the deployment with specified namespace
+                        local delete_cmd = string.format("helm uninstall %s -n %s", release_name, namespace)
+
+                        -- Execute the command to delete the deployment
+                        local result, err = run_shell_command(delete_cmd)
+
+                        -- Check if deletion was successful
+                        if result then
+                            print("Deployment successfully removed.")
+                        else
+                            print("Failed to remove deployment:", err)
+                        end
+                    end
+                end)
+                return true
+            end,
+        })
+        :find()
+end
+
+
 function M.helm_dryrun_from_buffer()
 	-- First, fetch available contexts
 	local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
@@ -342,6 +399,7 @@ end
 -- Register Neovim commands
 function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
+	vim.api.nvim_create_user_command("RemoveDeployment", M.remove_deployment, {})
 	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
 	vim.api.nvim_create_user_command("KubectlApplyFromBuffer", M.kubectl_apply_from_buffer, {})
 	vim.api.nvim_create_user_command("OpenK9s", M.open_k9s, {})
