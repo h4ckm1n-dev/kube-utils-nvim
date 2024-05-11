@@ -38,18 +38,12 @@ function M.helm_deploy_from_buffer()
     local namespace_list = vim.split(namespaces, "\n", true)
 
     -- Create a Telescope picker for selecting namespaces
-    require("telescope.builtin").select_dynamic({
+    require("telescope").pickers.new({}, {
         prompt_title = "Select Namespace",
-        results_title = "Namespaces",
-        entry_maker = function(entry)
-            return {
-                value = entry,
-                display = entry,
-                ordinal = entry,
-            }
-        end,
+        finder = require("telescope.finders").new_table({
+            results = namespace_list,
+        }),
         sorter = require("telescope.sorters").get_generic_fuzzy_sorter(),
-        results = namespace_list,
         attach_mappings = function(_, map)
             map("i", "<CR>", function(prompt_bufnr)
                 local selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
@@ -89,9 +83,8 @@ function M.helm_deploy_from_buffer()
             end)
             return true
         end,
-    })
+    }):find()
 end
-
 
 function M.helm_dryrun_from_buffer()
     -- Fetch available namespaces using kubectl
