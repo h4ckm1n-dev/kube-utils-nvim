@@ -104,25 +104,22 @@ function M.helm_dryrun_from_buffer()
 end
 
 function M.kubectl_apply_from_buffer()
-    -- Fetch the current file path from the buffer
-    local file_path = vim.api.nvim_buf_get_name(0)
-    if file_path == "" then
-        print("No file selected")
-        return
-    end
+	-- Fetch the current file path from the buffer
+	local file_path = vim.api.nvim_buf_get_name(0)
+	if file_path == "" then
+		print("No file selected")
+		return
+	end
 
-    -- Execute the kubectl apply command
-    local result = run_shell_command("kubectl apply -f " .. file_path)
+	-- Execute the kubectl apply command
+	local result = run_shell_command("kubectl apply -f " .. file_path)
 
-    if result and result ~= "" then
-        print("kubectl apply successful: \n" .. result)
-    else
-        print("kubectl apply failed or no output returned.")
-    end
+	if result and result ~= "" then
+		print("kubectl apply successful: \n" .. result)
+	else
+		print("kubectl apply failed or no output returned.")
+	end
 end
-
--- Load Telescope
-local telescope = require("telescope.builtin")
 
 -- Function to switch Kubernetes contexts
 function M.switch_kubernetes_context()
@@ -140,11 +137,11 @@ function M.switch_kubernetes_context()
 
 	vim.ui.select(context_list, { prompt = "Select Kubernetes context:" }, function(choice)
 		if choice then
-			local result, error_message = run_shell_command("kubectl config use-context " .. choice)
+			local result, switch_error_message = run_shell_command("kubectl config use-context " .. choice)
 			if result then
 				print("Switched to context: " .. choice)
 			else
-				print(error_message or "Failed to switch context.")
+				print(switch_error_message or "Failed to switch context.")
 			end
 		else
 			print("No context selected.")
@@ -156,7 +153,7 @@ end
 function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
 	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
-	vim.api.nvim_create_user_command("KubeSwitchContext", M.switch_kubernetes_context, {})	   
+	vim.api.nvim_create_user_command("KubeSwitchContext", M.switch_kubernetes_context, {})
 	vim.api.nvim_create_user_command("KubectlApplyFromBuffer", M.kubectl_apply_from_buffer, {})
 end
 
