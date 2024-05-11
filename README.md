@@ -7,7 +7,7 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 
 ## Features
 - **Helm Deployment:** Deploy Helm charts directly from your Neovim buffer.
-- **Remove Deployment:** Remove deployment from neovim
+- **Remove Deployment:** Remove deployment from Neovim.
 - **Helm Dry Run:** Simulate Helm chart installations without actually deploying.
 - **Kubectl Apply:** Apply Kubernetes manifests from your buffer.
 - **Kubernetes Context Switching:** Quickly switch between Kubernetes contexts.
