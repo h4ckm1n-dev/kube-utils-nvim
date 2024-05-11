@@ -29,6 +29,7 @@ end
 function M.helm_deploy_from_buffer()
     -- Fetch available namespaces using kubectl with awk for formatting
     local namespaces, err = run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
+    print("Namespaces:", namespaces)
     if not namespaces or namespaces == "" then
         print("Failed to fetch namespaces: " .. (err or "No namespaces found."))
         return
