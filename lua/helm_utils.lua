@@ -114,6 +114,30 @@ function M.helm_deploy_from_buffer()
 		:find()
 end
 
+function M.remove_deployment()
+    -- Identify the deployment to remove (e.g., by release name or some unique identifier)
+    local release_name = vim.fn.input("Enter the release name to remove: ")
+
+    -- Check if release name is provided
+    if release_name == "" then
+        print("Release name is required.")
+        return
+    end
+
+    -- Construct the command to delete the deployment
+    local delete_cmd = string.format("helm uninstall %s", release_name)
+
+    -- Execute the command to delete the deployment
+    local result, err = run_shell_command(delete_cmd)
+
+    -- Check if deletion was successful
+    if result then
+        print("Deployment successfully removed.")
+    else
+        print("Failed to remove deployment:", err)
+    end
+end
+
 function M.helm_dryrun_from_buffer()
 	-- First, fetch available contexts
 	local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
@@ -342,6 +366,7 @@ end
 -- Register Neovim commands
 function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", M.helm_deploy_from_buffer, {})
+	vim.api.nvim_create_user_command("RemoveDeployment", M.remove_deployment, {})
 	vim.api.nvim_create_user_command("HelmDryRun", M.helm_dryrun_from_buffer, {})
 	vim.api.nvim_create_user_command("KubectlApplyFromBuffer", M.kubectl_apply_from_buffer, {})
 	vim.api.nvim_create_user_command("OpenK9s", M.open_k9s, {})
