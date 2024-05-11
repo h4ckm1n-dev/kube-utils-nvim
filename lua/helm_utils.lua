@@ -288,39 +288,8 @@ function M.kubectl_apply_from_buffer()
 end
 
 function M.open_k9s()
-    -- Define the command to run K9s
-    local k9s_cmd = "k9s"
-
-    -- Create a new buffer and set its content to the output of K9s
-    local bufnr = vim.api.nvim_create_buf(false, true)
-    local job_id = vim.fn.termopen(k9s_cmd, {
-        on_stdout = function(_, data)
-            vim.api.nvim_buf_set_lines(bufnr, -1, -1, true, vim.split(data, "\n"))
-        end
-    })
-
-    -- Create a floating window to display the buffer
-    local width = 0.8
-    local height = 0.8
-    local win_width = math.floor(vim.o.columns * width)
-    local win_height = math.floor(vim.o.lines * height)
-    local row = math.floor((vim.o.lines - win_height) / 2 - 1)
-    local col = math.floor((vim.o.columns - win_width) / 2)
-
-    local opts = {
-        relative = 'editor',
-        width = win_width,
-        height = win_height,
-        row = row,
-        col = col,
-        style = 'minimal',
-        border = 'single',
-    }
-    local win_id = vim.api.nvim_open_win(bufnr, true, opts)
-
-    -- Resize terminal buffer
-    vim.api.nvim_win_set_height(win_id, win_height)
-    vim.api.nvim_win_set_width(win_id, win_width)
+    -- Open K9s in a new terminal buffer
+    vim.cmd('vnew | terminal k9s')
 end
 
 
