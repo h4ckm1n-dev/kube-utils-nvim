@@ -18,10 +18,7 @@
         "patch"
       ],
       "automerge": true,
-      "automergeSchedule": [
-        "after 10pm every weekday", 
-        "before 5am every weekday"
-      ]
+      "automergeSchedule": []
     },
     {
       "groupName": "all minor dependencies",
@@ -33,10 +30,7 @@
         "minor"
       ],
       "automerge": true,
-      "automergeSchedule": [
-        "after 10pm every weekday",
-        "before 5am every weekday"
-      ]
+      "automergeSchedule": []
     }
   ]
 }
