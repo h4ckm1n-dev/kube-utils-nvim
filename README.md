@@ -58,9 +58,10 @@ wk.register(helm_mappings, { prefix = "<leader>" })
 ```
 
 ## Requirements
-Neovim 0.9.0 or higher
-Helm
-kubectl
+- Neovim 0.9.0 or higher
+- Helm
+- kubectl
+- k9s
 
 ## Configuration
 No additional configuration is required. Simply install the plugin and start using the commands.
