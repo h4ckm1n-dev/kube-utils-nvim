@@ -281,6 +281,14 @@ function M.remove_deployment()
                         return
                     end
 
+                    -- Remove kube-public namespace from the list
+                    namespace_list = vim.tbl_filter(function(ns) return ns ~= "kube-public" end, namespace_list)
+
+                    if #namespace_list == 0 then
+                        print("No namespaces available after filtering.")
+                        return
+                    end
+
                     -- Create a table to store namespaces and their associated releases
                     local namespace_release_map = {}
 
@@ -354,7 +362,6 @@ function M.remove_deployment()
         end,
     }):find()
 end
-
 
 function M.helm_dryrun_from_buffer()
 	-- First, fetch available contexts
