@@ -69,8 +69,6 @@ No additional configuration is required. Simply install the plugin and start usi
 ## License
 This plugin is licensed under the MIT License. See the LICENSE file for details., also feel free to submit a PR
 
-# 🎉 Happy Kubernetes deployment with Neovim! 🎉
-
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
