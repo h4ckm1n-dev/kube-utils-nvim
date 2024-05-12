@@ -1,17 +1,17 @@
 # 🚀 Neovim Kubernetes Plugin 🚀
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![Go](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml/badge.svg)](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml)[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This Neovim plugin provides seamless integration with Kubernetes and Helm, allowing you to deploy and manage Kubernetes resources directly from your editor.
 
-## Build Status
-[![Go](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml/badge.svg)](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml)
-
 ## Features
-- **Helm Deployment:** Use `:HelmDeployFromBuffer` to deploy the Helm chart from the current buffer. You'll be prompted for the release name and namespace.
+- **Helm Deployment:** Use `:HelmDeployFromBuffer` to deploy the Helm chart from the current buffer. You'll be prompted for the release name context and namespace.
 - **Helm Remove Deployment:** Use `Removedeployment`to remove a deployment, You'll be prompted for the release name and namespace
 - **Helm Dry Run:** Use `:HelmDryRun` to simulate the Helm chart installation from the current buffer. You'll be prompted for the release name and namespace, and a new tab will open showing the simulated output.
 - **Helm Dependency Update:** Use `:HelmDependencyUpdateFromBuffer` to update Helm dependencies from the current buffer.
 - **Helm Dependency Build:** Use `:HelmDependencyBuildFromBuffer` to build Helm dependencies from the current buffer.
-- **Kubectl Apply:** Use `:KubectlApplyFromBuffer` to apply Kubernetes manifests from the current buffer.
+- **Kubectl Apply:** Use `:KubectlApplyFromBuffer` to apply Kubernetes manifests from the current buffer. You'll be prompted for the release name context and namespace.
 - **Open K9s:** Use `:OpenK9s` to open the K9s Kubernetes CLI in a new terminal buffer.
 - **Open K9s Split:** Use `:OpenK9sSplit` to open the K9s Kubernetes CLI in a new split terminal buffer.
 ### in both k9s mode ctl+c is remap to exit insert mode in k9s
@@ -26,11 +26,13 @@ Install the plugin using your preferred package manager (below is an example usi
 return {
     {
         "h4ckm1n-dev/kube-utils-nvim",
+        requires = { "nvim-telescope/telescope.nvim" },
         config = function()
             require("helm_utils").setup()
         end,
     },
 }
+
 ```
 Additionaly you can create a witch-key mapping to use the commands:
 ```lua
@@ -56,9 +58,10 @@ wk.register(helm_mappings, { prefix = "<leader>" })
 ```
 
 ## Requirements
-Neovim 0.9.0 or higher
-Helm
-kubectl
+- Neovim 0.9.0 or higher
+- Helm
+- kubectl
+- k9s
 
 ## Configuration
 No additional configuration is required. Simply install the plugin and start using the commands.
@@ -66,4 +69,24 @@ No additional configuration is required. Simply install the plugin and start usi
 ## License
 This plugin is licensed under the MIT License. See the LICENSE file for details., also feel free to submit a PR
 
-# 🎉 Happy Kubernetes deployment with Neovim! 🎉
+## Contributors ✨
+
+Thanks goes to these wonderful people :
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/h4ckm1n-dev"><img src="https://avatars.githubusercontent.com/u/97511408?v=4?s=100" width="100px;" alt="h4ckm1n"/><br /><sub><b>h4ckm1n</b></sub></a><br /><a href="https://github.com/h4ckm1n-dev/kube-utils-nvim/commits?author=h4ckm1n-dev" title="Code">💻</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
