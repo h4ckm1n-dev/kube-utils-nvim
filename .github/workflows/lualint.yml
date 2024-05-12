@@ -28,4 +28,4 @@ jobs:
       - name: Lint code
         run: |
           # Run linting command and store the exit code
-          luacheck . || exit 0
+          luacheck . --globals vim || exit 0
