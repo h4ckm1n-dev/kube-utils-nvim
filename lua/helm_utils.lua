@@ -46,6 +46,16 @@ function M.get_repository_info(chart_yaml_path)
 	return repo_name, repo_url
 end
 
+local function execute_helm_command(chart_directory, helm_command, success_message)
+	-- Execute the Helm command
+	local result, err = run_shell_command(helm_command)
+	if result then
+		print(success_message .. " successful: \n" .. result)
+	else
+		print(success_message .. " failed: " .. (err or "Unknown error"))
+	end
+end
+
 function M.helm_dependency_update_from_buffer()
 	local file_path = vim.api.nvim_buf_get_name(0)
 	if file_path == "" then
@@ -70,13 +80,7 @@ function M.helm_dependency_update_from_buffer()
 		print("Adding missing repository:", repo_check_err)
 	end
 
-	-- Execute the dependency update command
-	local result, err = run_shell_command(helm_cmd)
-	if result then
-		print("Helm dependency update successful: \n" .. result)
-	else
-		print("Helm dependency update failed: " .. (err or "Unknown error"))
-	end
+	execute_helm_command(chart_directory, helm_cmd, "Helm dependency update")
 end
 
 function M.helm_dependency_build_from_buffer()
@@ -88,12 +92,8 @@ function M.helm_dependency_build_from_buffer()
 
 	local chart_directory = file_path:match("(.*/)")
 	local helm_cmd = string.format("helm dependency build %s", chart_directory)
-	local result, err = run_shell_command(helm_cmd)
-	if result then
-		print("Helm dependency build successful: \n" .. result)
-	else
-		print("Helm dependency build failed: " .. (err or "Unknown error"))
-	end
+
+	execute_helm_command(chart_directory, helm_cmd, "Helm dependency build")
 end
 
 function M.helm_deploy_from_buffer()
@@ -312,8 +312,8 @@ function M.helm_dryrun_from_buffer()
 				results = context_list,
 			}),
 			sorter = require("telescope.config").values.generic_sorter({}),
-			attach_mappings = function(_, map)
-				map("i", "<CR>", function(prompt_bufnr)
+			attach_mappings = function(prompt_bufnr, map)
+				map("i", "<CR>", function()
 					local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
 					require("telescope.actions").close(prompt_bufnr)
 					if context_selection then
@@ -341,8 +341,8 @@ function M.helm_dryrun_from_buffer()
 									results = namespace_list,
 								}),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(_, map)
-									map("i", "<CR>", function(ns_prompt_bufnr)
+								attach_mappings = function(ns_prompt_bufnr, ns_map)
+									ns_map("i", "<CR>", function()
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
@@ -362,7 +362,7 @@ function M.helm_dryrun_from_buffer()
 												file_path,
 												namespace
 											)
-											local result = run_shell_command(helm_cmd)
+											local result, err = run_shell_command(helm_cmd)
 
 											-- Open a new tab and create a buffer
 											vim.cmd("tabnew")
@@ -494,12 +494,10 @@ function M.delete_namespace()
 	require("telescope.pickers")
 		.new({}, {
 			prompt_title = "Select Namespace to Delete",
-			finder = require("telescope.finders").new_table({
-				results = namespace_list,
-			}),
+			finder = require("telescope.finders").new_table({ results = namespace_list }),
 			sorter = require("telescope.config").values.generic_sorter({}),
 			attach_mappings = function(_, map)
-				map(function(prompt_bufnr)
+				map("i", "<CR>", function(prompt_bufnr)
 					local namespace_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
 					require("telescope.actions").close(prompt_bufnr)
 					if namespace_selection then
@@ -524,13 +522,12 @@ function M.delete_namespace()
 							print("Deletion cancelled.")
 						end
 					end
-				end, "<CR>", "i")
+				end)
 				return true
 			end,
 		})
 		:find()
 end
-
 function M.open_k9s()
 	-- Define the terminal command to run K9s
 	local k9s_cmd = "k9s"
