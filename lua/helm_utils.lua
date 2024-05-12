@@ -1,38 +1,27 @@
 local M = {}
 
-local function run_shell_command(cmd, on_finish)
-    local stdout = {}
-    local stderr = {}
-    local job_id = vim.fn.jobstart(cmd, {
-        on_stdout = function(_, data)
-            for _, d in ipairs(data) do
-                if d ~= "" then
-                    table.insert(stdout, d)
-                end
-            end
-        end,
-        on_stderr = function(_, data)
-            for _, d in ipairs(data) do
-                if d ~= "" then
-                    table.insert(stderr, d)
-                end
-            end
-        end,
-        on_exit = function(_, exit_code)
-            if exit_code == 0 then
-                on_finish(table.concat(stdout, "\n"), nil)
-            else
-                on_finish(nil, table.concat(stderr, "\n"))
-            end
-        end,
-    })
-
-    if not job_id then
-        print("Failed to run command: " .. cmd)
-        on_finish(nil, "Failed to start job")
+local function run_shell_command(cmd)
+    -- Attempt to open a pipe to run the command and capture both stdout and stderr
+    local handle, err = io.popen(cmd .. " 2>&1", "r")
+    if not handle then
+        -- If the handle is nil, log the error using print (replace with a logging function if available)
+        print("Failed to run command: " .. cmd .. "\nError: " .. tostring(err))
+        return nil, "Error running command: " .. tostring(err)
     end
-end
 
+    -- Read the output of the command
+    local output = handle:read("*a")
+    -- Always ensure the handle is closed to avoid resource leaks
+    handle:close()
+
+    -- Check if the output is nil or empty
+    if not output or output == "" then
+        return nil, "Command returned no output"
+    end
+
+    -- Return the output normally
+    return output
+end
 
 function M.get_repository_info(chart_yaml_path)
 	local repo_name = ""
