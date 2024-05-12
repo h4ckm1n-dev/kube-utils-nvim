@@ -26,11 +26,13 @@ Install the plugin using your preferred package manager (below is an example usi
 return {
     {
         "h4ckm1n-dev/kube-utils-nvim",
+        requires = { "nvim-telescope/telescope.nvim" },
         config = function()
             require("helm_utils").setup()
         end,
     },
 }
+
 ```
 Additionaly you can create a witch-key mapping to use the commands:
 ```lua
