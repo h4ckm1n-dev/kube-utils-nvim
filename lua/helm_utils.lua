@@ -290,8 +290,7 @@ function M.remove_deployment()
 						for _, namespace in ipairs(namespace_list) do
 							-- Fetch release names for the current namespace
 							local releases = run_shell_command(string.format("helm list -n %s --short", namespace))
-							if not releases then
-							else
+							if releases then
 								local release_list = vim.split(releases, "\n", true)
 								if #release_list > 0 then
 									namespace_release_map[namespace] = release_list
