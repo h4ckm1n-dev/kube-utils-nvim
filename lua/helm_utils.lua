@@ -456,7 +456,7 @@ function M.helm_dryrun_from_buffer()
 												file_path,
 												namespace
 											)
-											local result, err = run_shell_command(helm_cmd)
+											local result, error = run_shell_command(helm_cmd)
 
 											-- Open a new tab and create a buffer
 											vim.cmd("tabnew")
@@ -465,7 +465,7 @@ function M.helm_dryrun_from_buffer()
 											if result and result ~= "" then
 												vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
 											else
-												print("Dry run failed: " .. (err or "Unknown error"))
+												print("Dry run failed: " .. (error or "Unknown error"))
 											end
 											-- Switch to the new buffer
 											vim.api.nvim_set_current_buf(bufnr)
