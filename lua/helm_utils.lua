@@ -149,8 +149,8 @@ function M.helm_deploy_from_buffer()
 									results = namespace_list,
 								}),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(_, map1)
-									map1("i", function(ns_prompt_bufnr)
+								attach_mappings = function(_, map)
+									map("i", function(ns_prompt_bufnr)
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
@@ -346,8 +346,8 @@ function M.helm_dryrun_from_buffer()
 									results = namespace_list,
 								}),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(_, map1)
-									map1("i", "<CR>", function(ns_prompt_bufnr)
+								attach_mappings = function(_, map)
+									map("i", "<CR>", function(ns_prompt_bufnr)
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
@@ -445,8 +445,8 @@ function M.kubectl_apply_from_buffer()
 									results = namespace_list,
 								}),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(ns_prompt_bufnr, map1)
-									map1("i", "<CR>", function()
+								attach_mappings = function(ns_prompt_bufnr, map)
+									map("i", "<CR>", function()
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
