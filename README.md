@@ -27,6 +27,7 @@ return {
     {
         "h4ckm1n-dev/kube-utils-nvim",
         requires = { "nvim-telescope/telescope.nvim" },
+        branch = "main",
         config = function()
             require("helm_utils").setup()
         end,
