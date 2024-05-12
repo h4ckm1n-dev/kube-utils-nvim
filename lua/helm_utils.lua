@@ -1,26 +1,26 @@
 local M = {}
 
 local function run_shell_command(cmd)
-    -- Attempt to open a pipe to run the command and capture both stdout and stderr
-    local handle, err = io.popen(cmd .. " 2>&1", "r")
-    if not handle then
-        -- If the handle is nil, log the error using print (replace with a logging function if available)
-        print("Failed to run command: " .. cmd .. "\nError: " .. tostring(err))
-        return nil, "Error running command: " .. tostring(err)
-    end
+	-- Attempt to open a pipe to run the command and capture both stdout and stderr
+	local handle, err = io.popen(cmd .. " 2>&1", "r")
+	if not handle then
+		-- If the handle is nil, log the error using print (replace with a logging function if available)
+		print("Failed to run command: " .. cmd .. "\nError: " .. tostring(err))
+		return nil, "Error running command: " .. tostring(err)
+	end
 
-    -- Read the output of the command
-    local output = handle:read("*a")
-    -- Always ensure the handle is closed to avoid resource leaks
-    handle:close()
+	-- Read the output of the command
+	local output = handle:read("*a")
+	-- Always ensure the handle is closed to avoid resource leaks
+	handle:close()
 
-    -- Check if the output is nil or empty
-    if not output or output == "" then
-        return nil, "Command returned no output"
-    end
+	-- Check if the output is nil or empty
+	if not output or output == "" then
+		return nil, "Command returned no output"
+	end
 
-    -- Return the output normally
-    return output
+	-- Return the output normally
+	return output
 end
 
 function M.get_repository_info(chart_yaml_path)
@@ -145,8 +145,8 @@ function M.helm_deploy_from_buffer()
 								prompt_title = "Select Namespace",
 								finder = require("telescope.finders").new_table({ results = namespace_list }),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(_, map)
-									map("i", "<CR>", function(ns_prompt_bufnr)
+								attach_mappings = function(_, ns_map)
+									ns_map("i", "<CR>", function(ns_prompt_bufnr)
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
@@ -289,8 +289,7 @@ function M.remove_deployment()
 						-- Iterate over each namespace to fetch release names
 						for _, namespace in ipairs(namespace_list) do
 							-- Fetch release names for the current namespace
-							local releases, release_err =
-								run_shell_command(string.format("helm list -n %s --short", namespace))
+							local releases = run_shell_command(string.format("helm list -n %s --short", namespace))
 							if not releases then
 							else
 								local release_list = vim.split(releases, "\n", true)
@@ -312,8 +311,8 @@ function M.remove_deployment()
 								prompt_title = "Select Namespace and Release to Remove",
 								finder = require("telescope.finders").new_table({ results = namespace_list }),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(_, map)
-									map("i", "<CR>", function(namespace_prompt_bufnr)
+								attach_mappings = function(_, ns_map)
+									ns_map("i", "<CR>", function(namespace_prompt_bufnr)
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(
 												namespace_prompt_bufnr
@@ -331,8 +330,8 @@ function M.remove_deployment()
 															results = release_list,
 														}),
 														sorter = require("telescope.config").values.generic_sorter({}),
-														attach_mappings = function(_, map)
-															map("i", "<CR>", function(release_prompt_bufnr)
+														attach_mappings = function(_, rs_map)
+															rs_map("i", "<CR>", function(release_prompt_bufnr)
 																local release_selection = require(
 																	"telescope.actions.state"
 																).get_selected_entry(
@@ -456,7 +455,7 @@ function M.helm_dryrun_from_buffer()
 												file_path,
 												namespace
 											)
-											local result, err = run_shell_command(helm_cmd)
+											local result, ns_err = run_shell_command(helm_cmd) -- change from err to ns_err
 
 											-- Open a new tab and create a buffer
 											vim.cmd("tabnew")
@@ -465,7 +464,7 @@ function M.helm_dryrun_from_buffer()
 											if result and result ~= "" then
 												vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
 											else
-												print("Dry run failed: " .. (err or "Unknown error"))
+												print("Dry run failed: " .. (ns_err or "Unknown error")) -- change from err to ns_err
 											end
 											-- Switch to the new buffer
 											vim.api.nvim_set_current_buf(bufnr)
@@ -534,8 +533,8 @@ function M.kubectl_apply_from_buffer()
 									results = namespace_list,
 								}),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(ns_prompt_bufnr, map)
-									map("i", "<CR>", function()
+								attach_mappings = function(ns_prompt_bufnr, ns_map)
+									ns_map("i", "<CR>", function()
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
