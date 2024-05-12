@@ -1,43 +1,26 @@
 local M = {}
 
-local function run_shell_command(cmd, callback)
-    local stdout = {}
-    local stderr = {}
-    
-    -- Start the job with Neovim's API
-    local job_id = vim.fn.jobstart(cmd, {
-        on_stdout = function(_, data)
-            for _, line in ipairs(data) do
-                if line ~= "" then table.insert(stdout, line) end
-            end
-        end,
-        on_stderr = function(_, data)
-            for _, line in ipairs(data) do
-                if line ~= "" then table.insert(stderr, line) end
-            end
-        end,
-        on_exit = function(_, exit_code)
-            if exit_code == 0 then
-                if #stdout == 0 then
-                    callback(nil, "Command returned no output")
-                else
-                    callback(table.concat(stdout, "\n"), nil)
-                end
-            else
-                if #stderr == 0 then
-                    callback(nil, "Command failed with no error message")
-                else
-                    callback(nil, table.concat(stderr, "\n"))
-                end
-            end
-        end,
-    })
-
-    -- Handle case where job could not be started
-    if not job_id then
-        print("Failed to run command: " .. cmd)
-        callback(nil, "Failed to start job")
+local function run_shell_command(cmd)
+    -- Attempt to open a pipe to run the command and capture both stdout and stderr
+    local handle, err = io.popen(cmd .. " 2>&1", "r")
+    if not handle then
+        -- If the handle is nil, log the error using print (replace with a logging function if available)
+        print("Failed to run command: " .. cmd .. "\nError: " .. tostring(err))
+        return nil, "Error running command: " .. tostring(err)
     end
+
+    -- Read the output of the command
+    local output = handle:read("*a")
+    -- Always ensure the handle is closed to avoid resource leaks
+    handle:close()
+
+    -- Check if the output is nil or empty
+    if not output or output == "" then
+        return nil, "Command returned no output"
+    end
+
+    -- Return the output normally
+    return output
 end
 
 function M.get_repository_info(chart_yaml_path)
