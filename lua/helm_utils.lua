@@ -477,57 +477,91 @@ function M.kubectl_apply_from_buffer()
 end
 
 function M.delete_namespace()
-	-- Fetch available namespaces
-	local namespaces, ns_err = run_shell_command("kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'")
-	if not namespaces then
-		print(ns_err or "Failed to fetch namespaces.")
-		return
-	end
+    -- Fetch available contexts
+    local contexts, context_err = run_shell_command("kubectl config get-contexts -o name")
+    if not contexts then
+        print(context_err or "Failed to fetch Kubernetes contexts.")
+        return
+    end
 
-	local namespace_list = vim.split(namespaces, " ", true)
-	if #namespace_list == 0 then
-		print("No namespaces available.")
-		return
-	end
+    local context_list = vim.split(contexts, "\n", true)
+    if #context_list == 0 then
+        print("No Kubernetes contexts available.")
+        return
+    end
 
-	-- Create a Telescope picker for selecting the namespace
-	require("telescope.pickers")
-		.new({}, {
-			prompt_title = "Select Namespace to Delete",
-			finder = require("telescope.finders").new_table({ results = namespace_list }),
-			sorter = require("telescope.config").values.generic_sorter({}),
-			attach_mappings = function(_, map)
-				map("i", "<CR>", function(prompt_bufnr)
-					local namespace_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
-					require("telescope.actions").close(prompt_bufnr)
-					if namespace_selection then
-						local namespace = namespace_selection.value
-
-						-- Confirm deletion with user
-						local confirm_delete = vim.fn.input("Delete namespace " .. namespace .. "? [y/N]: ")
-						if confirm_delete == "y" or confirm_delete == "Y" then
-							-- Construct the command to delete the namespace
-							local delete_cmd = string.format("kubectl delete namespace %s", namespace)
-
-							-- Execute the command to delete the namespace
-							local result, err = run_shell_command(delete_cmd)
-
-							-- Check if deletion was successful
-							if result then
-								print("Namespace " .. namespace .. " successfully deleted.")
-							else
-								print("Failed to delete namespace " .. namespace .. ":", err)
-							end
-						else
-							print("Deletion cancelled.")
-						end
-					end
-				end)
-				return true
-			end,
-		})
-		:find()
+    -- Create a Telescope picker for selecting the Kubernetes context
+    require("telescope.pickers").new({}, {
+        prompt_title = "Select Kubernetes Context",
+        finder = require("telescope.finders").new_table({ results = context_list }),
+        sorter = require("telescope.config").values.generic_sorter({}),
+        attach_mappings = function(_, map)
+            map("i", "<CR>", function(prompt_bufnr)
+                local context_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
+                require("telescope.actions").close(prompt_bufnr)
+                if context_selection then
+                    -- Use the selected context
+                    run_shell_command("kubectl config use-context " .. context_selection.value)
+                    -- Proceed to namespace selection
+                    M.select_and_delete_namespace()
+                end
+            end)
+            return true
+        end,
+    }):find()
 end
+
+function M.select_and_delete_namespace()
+    -- Fetch available namespaces
+    local namespaces, ns_err = run_shell_command("kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'")
+    if not namespaces then
+        print(ns_err or "Failed to fetch namespaces.")
+        return
+    end
+
+    local namespace_list = vim.split(namespaces, " ", true)
+    if #namespace_list == 0 then
+        print("No namespaces available.")
+        return
+    end
+
+    -- Create a Telescope picker for selecting the namespace
+    require("telescope.pickers").new({}, {
+        prompt_title = "Select Namespace to Delete",
+        finder = require("telescope.finders").new_table({ results = namespace_list }),
+        sorter = require("telescope.config").values.generic_sorter({}),
+        attach_mappings = function(_, map)
+            map("i", "<CR>", function(prompt_bufnr)
+                local namespace_selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
+                require("telescope.actions").close(prompt_bufnr)
+                if namespace_selection then
+                    local namespace = namespace_selection.value
+
+                    -- Confirm deletion with user
+                    local confirm_delete = vim.fn.input("Delete namespace " .. namespace .. "? [y/N]: ")
+                    if confirm_delete == "y" or confirm_delete == "Y" then
+                        -- Construct the command to delete the namespace
+                        local delete_cmd = string.format("kubectl delete namespace %s", namespace)
+
+                        -- Execute the command to delete the namespace
+                        local result, err = run_shell_command(delete_cmd)
+
+                        -- Check if deletion was successful
+                        if result then
+                            print("Namespace " .. namespace .. " successfully deleted.")
+                        else
+                            print("Failed to delete namespace " .. namespace .. ":", err)
+                        end
+                    else
+                        print("Deletion cancelled.")
+                    end
+                end
+            end)
+            return true
+        end,
+    }):find()
+end
+
 function M.open_k9s()
 	-- Define the terminal command to run K9s
 	local k9s_cmd = "k9s"
