@@ -235,150 +235,152 @@ function M.helm_deploy_from_buffer()
 end
 
 function M.remove_deployment()
-    -- Fetch available contexts
-    local contexts, ctx_err = run_shell_command("kubectl config get-contexts -o name")
-    if not contexts then
-        print(ctx_err or "Failed to fetch Kubernetes contexts.")
-        return
-    end
+	-- Fetch available contexts
+	local contexts, ctx_err = run_shell_command("kubectl config get-contexts -o name")
+	if not contexts then
+		print(ctx_err or "Failed to fetch Kubernetes contexts.")
+		return
+	end
 
-    local context_list = vim.split(contexts, "\n", true)
-    if #context_list == 0 then
-        print("No Kubernetes contexts available.")
-        return
-    end
+	local context_list = vim.split(contexts, "\n", true)
+	if #context_list == 0 then
+		print("No Kubernetes contexts available.")
+		return
+	end
 
-    -- Create a Telescope picker for selecting the context
-    require("telescope.pickers")
-        .new({}, {
-            prompt_title = "Select Kubernetes Context",
-            finder = require("telescope.finders").new_table({ results = context_list }),
-            sorter = require("telescope.config").values.generic_sorter({}),
-            attach_mappings = function(_, map)
-                map("i", "<CR>", function(ctx_prompt_bufnr)
-                    local ctx_selection = require("telescope.actions.state").get_selected_entry(ctx_prompt_bufnr)
-                    require("telescope.actions").close(ctx_prompt_bufnr)
-                    if ctx_selection then
-                        local context = ctx_selection.value
+	-- Create a Telescope picker for selecting the context
+	require("telescope.pickers")
+		.new({}, {
+			prompt_title = "Select Kubernetes Context",
+			finder = require("telescope.finders").new_table({ results = context_list }),
+			sorter = require("telescope.config").values.generic_sorter({}),
+			attach_mappings = function(_, map)
+				map("i", "<CR>", function(ctx_prompt_bufnr)
+					local ctx_selection = require("telescope.actions.state").get_selected_entry(ctx_prompt_bufnr)
+					require("telescope.actions").close(ctx_prompt_bufnr)
+					if ctx_selection then
+						local context = ctx_selection.value
 
-                        -- Set the selected context
-                        local set_ctx_cmd = string.format("kubectl config use-context %s", context)
-                        local _, set_ctx_err = run_shell_command(set_ctx_cmd)
-                        if set_ctx_err then
-                            print("Failed to set context:", set_ctx_err)
-                            return
-                        end
+						-- Set the selected context
+						local set_ctx_cmd = string.format("kubectl config use-context %s", context)
+						local _, set_ctx_err = run_shell_command(set_ctx_cmd)
+						if set_ctx_err then
+							print("Failed to set context:", set_ctx_err)
+							return
+						end
 
-                        -- Fetch available namespaces
-                        local namespaces, ns_err =
-                            run_shell_command("kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'")
-                        if not namespaces then
-                            print(ns_err or "Failed to fetch namespaces.")
-                            return
-                        end
+						-- Fetch available namespaces
+						local namespaces, ns_err =
+							run_shell_command("kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'")
+						if not namespaces then
+							print(ns_err or "Failed to fetch namespaces.")
+							return
+						end
 
-                        local namespace_list = vim.split(namespaces, " ", true)
-                        if #namespace_list == 0 then
-                            print("No namespaces available.")
-                            return
-                        end
+						local namespace_list = vim.split(namespaces, " ", true)
+						if #namespace_list == 0 then
+							print("No namespaces available.")
+							return
+						end
 
-                        -- Create a table to store namespaces and their associated releases
-                        local namespace_release_map = {}
+						-- Create a table to store namespaces and their associated releases
+						local namespace_release_map = {}
 
-                        -- Iterate over each namespace to fetch release names
-                        for _, namespace in ipairs(namespace_list) do
-                            local releases = run_shell_command(string.format("helm list -n %s --short", namespace))
-                            if releases then
-                                local release_list = vim.split(releases, "\n", true)
-                                if #release_list > 0 then
-                                    namespace_release_map[namespace] = release_list
-                                end
-                            else
-                                print("No releases found in namespace:", namespace)
-                            end
-                        end
+						-- Iterate over each namespace to fetch release names
+						for _, namespace in ipairs(namespace_list) do
+							-- Fetch release names for the current namespace
+							local releases = run_shell_command(string.format("helm list -n %s --short", namespace))
+							if not releases then
+							else
+								local release_list = vim.split(releases, "\n", true)
+								if #release_list > 0 then
+									namespace_release_map[namespace] = release_list
+								end
+							end
+						end
 
-                        -- Check if any releases were found
-                        if vim.tbl_isempty(namespace_release_map) then
-                            print("No releases found in any namespace.")
-                            return
-                        end
+						-- Check if any releases were found
+						if vim.tbl_isempty(namespace_release_map) then
+							print("No releases found in any namespace.")
+							return
+						end
 
-                        -- Create a Telescope picker for selecting the namespace and release
-                        require("telescope.pickers")
-                            .new({}, {
-                                prompt_title = "Select Namespace and Release to Remove",
-                                finder = require("telescope.finders").new_table({ results = namespace_list }),
-                                sorter = require("telescope.config").values.generic_sorter({}),
-                                attach_mappings = function(_, ns_map)
-                                    ns_map("i", "<CR>", function(namespace_prompt_bufnr)
-                                        local namespace_selection =
-                                            require("telescope.actions.state").get_selected_entry(namespace_prompt_bufnr)
-                                        require("telescope.actions").close(namespace_prompt_bufnr)
-                                        if namespace_selection then
-                                            local namespace = namespace_selection.value
-                                            local release_list = namespace_release_map[namespace]
-                                            if release_list then
-                                                -- Create a Telescope picker for selecting the release
-                                                require("telescope.pickers")
-                                                    .new({}, {
-                                                        prompt_title = "Select Release to Remove",
-                                                        finder = require("telescope.finders").new_table({
-                                                            results = release_list,
-                                                        }),
-                                                        sorter = require("telescope.config").values.generic_sorter({}),
-                                                        attach_mappings = function(_, rs_map)
-                                                            rs_map("i", "<CR>", function(release_prompt_bufnr)
-                                                                local release_selection = require(
-                                                                    "telescope.actions.state"
-                                                                ).get_selected_entry(
-                                                                    release_prompt_bufnr
-                                                                )
-                                                                require("telescope.actions").close(release_prompt_bufnr)
-                                                                if release_selection then
-                                                                    local release_name = release_selection.value
-                                                                    local delete_cmd = string.format(
-                                                                        "helm uninstall %s -n %s",
-                                                                        release_name,
-                                                                        namespace
-                                                                    )
-                                                                    local result, err = run_shell_command(delete_cmd)
-                                                                    if result then
-                                                                        print(
-                                                                            "Deployment "
-                                                                                .. release_name
-                                                                                .. " successfully removed."
-                                                                        )
-                                                                    else
-                                                                        print(
-                                                                            "Failed to remove deployment "
-                                                                                .. release_name
-                                                                                .. ":",
-                                                                            err
-                                                                        )
-                                                                    end
-                                                                end
-                                                            end)
-                                                            return true
-                                                        end,
-                                                    })
-                                                    .find()
-                                            else
-                                                print("No releases found in namespace " .. namespace)
-                                            end
-                                        end
-                                    end)
-                                    return true
-                                end,
-                            })
-                            .find()
-                    end
-                end)
-                return true
-            end,
-        })
-        .find()
+						-- Create a Telescope picker for selecting the namespace and release
+						require("telescope.pickers")
+							.new({}, {
+								prompt_title = "Select Namespace and Release to Remove",
+								finder = require("telescope.finders").new_table({ results = namespace_list }),
+								sorter = require("telescope.config").values.generic_sorter({}),
+								attach_mappings = function(_, ns_map)
+									ns_map("i", "<CR>", function(namespace_prompt_bufnr)
+										local namespace_selection =
+											require("telescope.actions.state").get_selected_entry(
+												namespace_prompt_bufnr
+											)
+										require("telescope.actions").close(namespace_prompt_bufnr)
+										if namespace_selection then
+											local namespace = namespace_selection.value
+											local release_list = namespace_release_map[namespace]
+											if release_list then
+												-- Create a Telescope picker for selecting the release
+												require("telescope.pickers")
+													.new({}, {
+														prompt_title = "Select Release to Remove",
+														finder = require("telescope.finders").new_table({
+															results = release_list,
+														}),
+														sorter = require("telescope.config").values.generic_sorter({}),
+														attach_mappings = function(_, rs_map)
+															rs_map("i", "<CR>", function(release_prompt_bufnr)
+																local release_selection = require(
+																	"telescope.actions.state"
+																).get_selected_entry(
+																	release_prompt_bufnr
+																)
+																require("telescope.actions").close(release_prompt_bufnr)
+																if release_selection then
+																	local release_name = release_selection.value
+																	local delete_cmd = string.format(
+																		"helm uninstall %s -n %s",
+																		release_name,
+																		namespace
+																	)
+																	local result, err = run_shell_command(delete_cmd)
+																	if result then
+																		print(
+																			"Deployment "
+																				.. release_name
+																				.. " successfully removed."
+																		)
+																	else
+																		print(
+																			"Failed to remove deployment "
+																				.. release_name
+																				.. ":",
+																			err
+																		)
+																	end
+																end
+															end)
+															return true
+														end,
+													})
+													:find()
+											else
+												print("No releases found in namespace " .. namespace)
+											end
+										end
+									end)
+									return true
+								end,
+							})
+							:find()
+					end
+				end)
+				return true
+			end,
+		})
+		:find()
 end
 
 function M.helm_dryrun_from_buffer()
