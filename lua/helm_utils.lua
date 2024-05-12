@@ -273,9 +273,23 @@ function M.remove_deployment()
                         return
                     end
 
-                    -- Create a Telescope picker for selecting the namespace
+                    -- Fetch release names for all namespaces in the selected context
+                    local release_cmd = string.format("helm list --short --all-namespaces --context=%s", context)
+                    local releases, release_err = run_shell_command(release_cmd)
+                    if not releases then
+                        print(release_err or "Failed to fetch release names.")
+                        return
+                    end
+
+                    local release_list = vim.split(releases, "\n", true)
+                    if #release_list == 0 then
+                        print("No releases found.")
+                        return
+                    end
+
+                    -- Create a Telescope picker for selecting the namespace and release
                     require("telescope.pickers").new({}, {
-                        prompt_title = "Select Namespace",
+                        prompt_title = "Select Namespace and Release to Remove",
                         finder = require("telescope.finders").new_table({ results = namespace_list }),
                         sorter = require("telescope.config").values.generic_sorter({}),
                         attach_mappings = function(_, map)
@@ -284,24 +298,19 @@ function M.remove_deployment()
                                 require("telescope.actions").close(namespace_prompt_bufnr)
                                 if namespace_selection then
                                     local namespace = namespace_selection.value
-
-                                    -- Fetch release names for the selected namespace
-                                    local releases, release_err = run_shell_command(string.format("helm list -n %s --short --context=%s", namespace, context))
-                                    if not releases then
-                                        print(release_err or "Failed to fetch release names.")
-                                        return
+                                    -- Filter release list for the selected namespace
+                                    local filtered_releases = {}
+                                    for _, release in ipairs(release_list) do
+                                        local release_namespace = release:match("([^%s]+)%s+")
+                                        if release_namespace == namespace then
+                                            table.insert(filtered_releases, release)
+                                        end
                                     end
 
-                                    local release_list = vim.split(releases, "\n", true)
-                                    if #release_list == 0 then
-                                        print("No releases found in namespace " .. namespace)
-                                        return
-                                    end
-
-                                    -- Create a Telescope picker for selecting the release to remove
+                                    -- Create a Telescope picker for selecting the release
                                     require("telescope.pickers").new({}, {
                                         prompt_title = "Select Release to Remove",
-                                        finder = require("telescope.finders").new_table({ results = release_list }),
+                                        finder = require("telescope.finders").new_table({ results = filtered_releases }),
                                         sorter = require("telescope.config").values.generic_sorter({}),
                                         attach_mappings = function(_, map)
                                             map("i", "<CR>", function(release_prompt_bufnr)
@@ -332,6 +341,7 @@ function M.remove_deployment()
         end,
     }):find()
 end
+
 
 function M.helm_dryrun_from_buffer()
 	-- First, fetch available contexts
