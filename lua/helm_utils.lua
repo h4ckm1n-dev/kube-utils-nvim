@@ -145,8 +145,8 @@ function M.helm_deploy_from_buffer()
 								prompt_title = "Select Namespace",
 								finder = require("telescope.finders").new_table({ results = namespace_list }),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(_, map)
-									map("i", "<CR>", function(ns_prompt_bufnr)
+								attach_mappings = function(_, ns_map)
+									ns_map("i", "<CR>", function(ns_prompt_bufnr)
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
@@ -312,8 +312,8 @@ function M.remove_deployment()
 								prompt_title = "Select Namespace and Release to Remove",
 								finder = require("telescope.finders").new_table({ results = namespace_list }),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(_, map)
-									map("i", "<CR>", function(namespace_prompt_bufnr)
+								attach_mappings = function(_, ns_map)
+									ns_map("i", "<CR>", function(namespace_prompt_bufnr)
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(
 												namespace_prompt_bufnr
@@ -331,8 +331,8 @@ function M.remove_deployment()
 															results = release_list,
 														}),
 														sorter = require("telescope.config").values.generic_sorter({}),
-														attach_mappings = function(_, map)
-															map("i", "<CR>", function(release_prompt_bufnr)
+														attach_mappings = function(_, rs_map)
+															rs_map("i", "<CR>", function(release_prompt_bufnr)
 																local release_selection = require(
 																	"telescope.actions.state"
 																).get_selected_entry(
@@ -534,8 +534,8 @@ function M.kubectl_apply_from_buffer()
 									results = namespace_list,
 								}),
 								sorter = require("telescope.config").values.generic_sorter({}),
-								attach_mappings = function(ns_prompt_bufnr, map)
-									map("i", "<CR>", function()
+								attach_mappings = function(ns_prompt_bufnr, ns_map)
+									ns_map("i", "<CR>", function()
 										local namespace_selection =
 											require("telescope.actions.state").get_selected_entry(ns_prompt_bufnr)
 										require("telescope.actions").close(ns_prompt_bufnr)
