@@ -46,16 +46,6 @@ function M.get_repository_info(chart_yaml_path)
 	return repo_name, repo_url
 end
 
-local function execute_helm_command(chart_directory, helm_command, success_message)
-	-- Execute the Helm command
-	local result, err = run_shell_command(helm_command)
-	if result then
-		print(success_message .. " successful: \n" .. result)
-	else
-		print(success_message .. " failed: " .. (err or "Unknown error"))
-	end
-end
-
 function M.helm_dependency_update_from_buffer()
 	local file_path = vim.api.nvim_buf_get_name(0)
 	if file_path == "" then
@@ -80,7 +70,13 @@ function M.helm_dependency_update_from_buffer()
 		print("Adding missing repository:", repo_check_err)
 	end
 
-	execute_helm_command(chart_directory, helm_cmd, "Helm dependency update")
+	-- Execute the dependency update command
+	local result, err = run_shell_command(helm_cmd)
+	if result then
+		print("Helm dependency update successful: \n" .. result)
+	else
+		print("Helm dependency update failed: " .. (err or "Unknown error"))
+	end
 end
 
 function M.helm_dependency_build_from_buffer()
@@ -92,8 +88,12 @@ function M.helm_dependency_build_from_buffer()
 
 	local chart_directory = file_path:match("(.*/)")
 	local helm_cmd = string.format("helm dependency build %s", chart_directory)
-
-	execute_helm_command(chart_directory, helm_cmd, "Helm dependency build")
+	local result, err = run_shell_command(helm_cmd)
+	if result then
+		print("Helm dependency build successful: \n" .. result)
+	else
+		print("Helm dependency build failed: " .. (err or "Unknown error"))
+	end
 end
 
 function M.helm_deploy_from_buffer()
