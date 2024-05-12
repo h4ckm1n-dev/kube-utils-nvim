@@ -1,0 +1,26 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "h4ckm1n-dev",
+      "name": "h4ckm1n",
+      "avatar_url": "https://avatars.githubusercontent.com/u/97511408?v=4",
+      "profile": "https://github.com/h4ckm1n-dev",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "kube-utils-nvim",
+  "projectOwner": "h4ckm1n-dev"
+}
