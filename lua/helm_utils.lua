@@ -628,117 +628,44 @@ function M.select_and_delete_namespace()
 end
 
 function M.open_k9s()
-    -- Fetch available contexts
-    local contexts, ctx_err = run_shell_command("kubectl config get-contexts -o name")
-    if not contexts then
-        print(ctx_err or "Failed to fetch Kubernetes contexts.")
-        return
-    end
+	-- Define the terminal command to run K9s
+	local k9s_cmd = "k9s"
 
-    local context_list = vim.split(contexts, "\n", true)
-    if #context_list == 0 then
-        print("No Kubernetes contexts available.")
-        return
-    end
+	-- Calculate window dimensions and position based on the editor's size
+	local width = 0.8 -- Width percentage of the screen
+	local height = 0.8 -- Height percentage of the screen
+	local x = (1 - width) / 2
+	local y = (1 - height) / 2
+	local opts = {
+		relative = "editor",
+		width = math.floor(vim.o.columns * width),
+		height = math.floor(vim.o.lines * height),
+		col = math.floor(vim.o.columns * x),
+		row = math.floor(vim.o.lines * y),
+		style = "minimal",
+	}
 
-    -- Create a Telescope picker for selecting the context
-    require("telescope.pickers").new({}, {
-        prompt_title = "Select Kubernetes Context",
-        finder = require("telescope.finders").new_table({ results = context_list }),
-        sorter = require("telescope.config").values.generic_sorter({}),
-        attach_mappings = function(_, map)
-            map("i", "<CR>", function(ctx_prompt_bufnr)
-                local ctx_selection = require("telescope.actions.state").get_selected_entry(ctx_prompt_bufnr)
-                require("telescope.actions").close(ctx_prompt_bufnr)
-                if ctx_selection then
-                    local context = ctx_selection.value
+	-- Create a new terminal buffer and open it in a floating window
+	local bufnr = vim.api.nvim_create_buf(false, true)
+	vim.api.nvim_open_win(bufnr, true, opts)
 
-                    -- Set the selected context
-                    local set_ctx_cmd = string.format("kubectl config use-context %s", context)
-                    local _, set_ctx_err = run_shell_command(set_ctx_cmd)
-                    if set_ctx_err then
-                        print("Failed to set context:", set_ctx_err)
-                        return
-                    end
+	-- Run K9s in the newly created terminal buffer
+	vim.fn.termopen(k9s_cmd)
 
-                    -- Open K9s after setting the context
-                    M.open_k9s_terminal()
-                end
-            end)
-            return true
-        end,
-    }):find()
+	-- Set key mappings to manage the floating window and interactions
+	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<C-\\><C-n>", { noremap = true, silent = true })
 end
 
 function M.open_k9s_split()
-    -- Fetch available contexts
-    local contexts, ctx_err = run_shell_command("kubectl config get-contexts -o name")
-    if not contexts then
-        print(ctx_err or "Failed to fetch Kubernetes contexts.")
-        return
-    end
+	-- Open K9s in a new terminal buffer
+	vim.cmd("vnew | terminal k9s")
 
-    local context_list = vim.split(contexts, "\n", true)
-    if #context_list == 0 then
-        print("No Kubernetes contexts available.")
-        return
-    end
-
-    -- Create a Telescope picker for selecting the context
-    require("telescope.pickers").new({}, {
-        prompt_title = "Select Kubernetes Context",
-        finder = require("telescope.finders").new_table({ results = context_list }),
-        sorter = require("telescope.config").values.generic_sorter({}),
-        attach_mappings = function(_, map)
-            map("i", "<CR>", function(ctx_prompt_bufnr)
-                local ctx_selection = require("telescope.actions.state").get_selected_entry(ctx_prompt_bufnr)
-                require("telescope.actions").close(ctx_prompt_bufnr)
-                if ctx_selection then
-                    local context = ctx_selection.value
-
-                    -- Set the selected context
-                    local set_ctx_cmd = string.format("kubectl config use-context %s", context)
-                    local _, set_ctx_err = run_shell_command(set_ctx_cmd)
-                    if set_ctx_err then
-                        print("Failed to set context:", set_ctx_err)
-                        return
-                    end
-
-                    -- Open K9s in a split window after setting the context
-                    M.open_k9s_terminal_split()
-                end
-            end)
-            return true
-        end,
-    }):find()
-end
-
-function M.open_k9s_terminal()
-    -- Define the terminal command to run K9s
-    local k9s_cmd = "k9s"
-
-    -- Run K9s in a new terminal buffer
-    vim.cmd("terminal " .. k9s_cmd)
-
-    -- Set up key mappings to quit the terminal window gracefully
-    local bufnr = vim.api.nvim_get_current_buf()
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<C-\\><C-n>", { noremap = true, silent = true })
-end
-
-function M.open_k9s_terminal_split()
-    -- Define the terminal command to run K9s
-    local k9s_cmd = "k9s"
-
-    -- Open K9s in a new terminal buffer in a split window
-    vim.cmd("split | terminal " .. k9s_cmd)
-
-    -- Set up key mappings to quit the terminal window gracefully
-    local bufnr = vim.api.nvim_get_current_buf()
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
-    vim.api.nvim_buf_set_keymap(bufnr, "t", "<C-c>", "<C-\\><C-n>", { noremap = true, silent = true })
+	-- Set up key mapping to quit the terminal window gracefully
+	vim.api.nvim_buf_set_keymap(0, "t", "<C-w>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(0, "t", "<C-w>c", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(0, "t", "<C-c>", "<C-\\><C-n>", { noremap = true, silent = true })
 end
 
 -- Register Neovim commands
