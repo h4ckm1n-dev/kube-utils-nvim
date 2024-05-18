@@ -1,9 +1,9 @@
 -- /home/h4ckm1n/Documents/Divers/kube-utils-nvim/init.lua
 local M = {}
 
-local Helm = require("kube-utils-nvim.modules.helm")
-local Kubectl = require("kube-utils-nvim.modules.kubectl")
-local K9s = require("kube-utils-nvim.modules.k9s")
+local Helm = require("modules.helm")
+local Kubectl = require("modules.kubectl")
+local K9s = require("modules.k9s")
 
 function M.setup()
     vim.api.nvim_create_user_command("HelmDeployFromBuffer", function() Helm.deploy_from_buffer() end, {})
