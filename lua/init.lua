@@ -6,6 +6,10 @@ local Kubectl = require("modules.kubectl")
 local K9s = require("modules.k9s")
 
 function M.setup()
+	-- Define a command to call the Helm.template_from_buffer function
+	vim.api.nvim_create_user_command('HelmTemplateFromBuffer', function()
+		Helm.template_from_buffer()
+	end, {})
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", function()
 		Helm.deploy_from_buffer()
 	end, {})
