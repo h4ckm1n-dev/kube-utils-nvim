@@ -15,6 +15,7 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 - **Helm Dry Run:** Use `:HelmDryRun` to simulate the Helm chart installation from the current buffer. You'll be prompted for the release name and namespace, and a new tab will open showing the simulated output.
 - **Helm Dependency Update:** Use `:HelmDependencyUpdateFromBuffer` to update Helm dependencies from the current buffer.
 - **Helm Dependency Build:** Use `:HelmDependencyBuildFromBuffer` to build Helm dependencies from the current buffer.
+- **Helm Template:** Use `:HelmTemplateFromBuffer` to build Helm dependencies from the current buffer.
 - **Kubectl Apply:** Use `:KubectlApplyFromBuffer` to apply Kubernetes manifests from the current buffer. You'll be prompted for the release name context and namespace.
 - **Open K9s:** Use `:OpenK9s` to open the K9s Kubernetes CLI in a new terminal buffer.
 - **Open K9s Split:** Use `:OpenK9sSplit` to open the K9s Kubernetes CLI in a new split terminal buffer.
