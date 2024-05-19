@@ -39,8 +39,6 @@ function M.setup()
 	vim.api.nvim_create_user_command("OpenK9sSplit", function()
 		K9s.open_split()
 	end, {})
-
-	-- Define commands for toggling LSP
 	vim.api.nvim_create_user_command("StopYamlls", function()
 		toggle_lsp.stop_yamlls()
 	end, {})
