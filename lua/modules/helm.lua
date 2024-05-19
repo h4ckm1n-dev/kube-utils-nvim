@@ -201,6 +201,21 @@ function Helm.dryrun_from_buffer()
 				end
 				-- Switch to the new buffer
 				vim.api.nvim_set_current_buf(bufnr)
+
+				-- Prompt to save the result to dry_run.yaml
+				TelescopePicker.input("Save output to dry_run.yaml? (yes/no)", function(save_choice)
+					if save_choice:lower() == "yes" then
+						local save_path = chart_directory .. "dry_run.yaml"
+						local file = io.open(save_path, "w")
+						if file then
+							file:write(result)
+							file:close()
+							log_info("Output saved to " .. save_path)
+						else
+							log_error("Failed to save the output to dry_run.yaml")
+						end
+					end
+				end)
 			end)
 		end)
 	end)
