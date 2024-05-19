@@ -1,4 +1,4 @@
--- /home/h4ckm1n/Documents/Divers/kube-utils-nvim/init.lua
+-- /kube-utils-nvim/init.lua
 
 local M = {}
 
