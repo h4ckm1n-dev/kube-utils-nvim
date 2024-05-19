@@ -136,8 +136,16 @@ function Helm.dependency_build_from_buffer()
 end
 
 local function generate_helm_template(chart_directory)
+	-- Change the current working directory to the chart directory
+	local original_directory = vim.loop.cwd()
+	vim.loop.chdir(chart_directory)
+
 	local helm_cmd = "helm template ."
-	local result, err = Command.run_shell_command(helm_cmd, chart_directory)
+	local result, err = Command.run_shell_command(helm_cmd)
+
+	-- Change back to the original directory
+	vim.loop.chdir(original_directory)
+
 	if result and result ~= "" then
 		return result
 	else
