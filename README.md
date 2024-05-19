@@ -8,18 +8,6 @@
 
 This Neovim plugin provides seamless integration with Kubernetes and Helm, allowing you to deploy and manage Kubernetes resources directly from your editor.
 
-## Features
-
-- **Helm Deployment:** Use `:HelmDeployFromBuffer` to deploy the Helm chart from the current buffer. You'll be prompted for the release name context and namespace.
-- **Helm Remove Deployment:** Use `Removedeployment`to remove a deployment, You'll be prompted for the release name and namespace
-- **Helm Dry Run:** Use `:HelmDryRun` to simulate the Helm chart installation from the current buffer. You'll be prompted for the release name and namespace, and a new tab will open showing the simulated output.
-- **Helm Dependency Update:** Use `:HelmDependencyUpdateFromBuffer` to update Helm dependencies from the current buffer.
-- **Helm Dependency Build:** Use `:HelmDependencyBuildFromBuffer` to build Helm dependencies from the current buffer.
-- **Helm Template:** Use `:HelmTemplateFromBuffer` to build Helm dependencies from the current buffer.
-- **Kubectl Apply:** Use `:KubectlApplyFromBuffer` to apply Kubernetes manifests from the current buffer. You'll be prompted for the release name context and namespace.
-- **Open K9s:** Use `:OpenK9s` to open the K9s Kubernetes CLI in a new terminal buffer.
-- **Open K9s Split:** Use `:OpenK9sSplit` to open the K9s Kubernetes CLI in a new split terminal buffer.
-
 ### in both k9s mode ctl+c is remap to exit insert mode in k9s
 
 ![Capture d’écran du 2024-05-11 18-31-56](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/bbfe3a51-6117-413f-9d31-9f66517994c2)
@@ -44,7 +32,7 @@ return {
 
 ```
 
-Additionaly you can create a witch-key mapping to use the commands:
+Additionaly you can create a witch-key mapping to use the commands (this is also the list of the feature :
 
 ```lua
 local helm_mappings = {
