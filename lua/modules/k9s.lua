@@ -4,14 +4,15 @@ local K9s = {}
 
 -- Helper function to set up terminal key mappings
 local function set_terminal_keymaps(bufnr)
+	local opts = { noremap = true, silent = true }
 	local keymaps = {
-		{ "t", "<C-w>q", "<C-\\><C-n>:q<CR>" },
-		{ "t", "<C-w>c", "<C-\\><C-n>:q<CR>" },
-		{ "t", "<C-c>", "<C-\\><C-n>" },
+		{ "t", "<C-w>q", "<C-\\><C-n>:q<CR>", opts },
+		{ "t", "<C-w>c", "<C-\\><C-n>:q<CR>", opts },
+		{ "t", "<C-c>", "<C-\\><C-n>", opts },
 	}
 
 	for _, keymap in ipairs(keymaps) do
-		vim.api.nvim_buf_set_keymap(bufnr, unpack(keymap), { noremap = true, silent = true })
+		vim.api.nvim_buf_set_keymap(bufnr, keymap[1], keymap[2], keymap[3], keymap[4])
 	end
 end
 
@@ -52,7 +53,8 @@ end
 -- Open K9s in a vertical split
 function K9s.open_split()
 	vim.cmd("vnew | terminal k9s")
-	set_terminal_keymaps(0)
+	local bufnr = vim.api.nvim_get_current_buf()
+	set_terminal_keymaps(bufnr)
 end
 
 return K9s
