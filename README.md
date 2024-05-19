@@ -47,17 +47,19 @@ Additionaly you can create a witch-key mapping to use the commands:
 
 ```lua
 local helm_mappings = {
-    k = {
-        name = "Kubernetes", -- This sets a label for all helm-related keybindings
-        c = { "<cmd>HelmDeployFromBuffer<CR>", "Helm Deploy Buffer to Context" },
-        r = { "<cmd>RemoveDeployment<CR>", "Helm Remove Deployment From Buffer" },
-        d = { "<cmd>HelmDryRun<CR>", "helm DryRun Buffer" },
-        a = { "<cmd>KubectlApplyFromBuffer<CR>", "kubectl apply From buffer" },
-        u = { "<cmd>HelmDependencyUpdateFromBuffer<CR>", "Helm Dependency Update from Buffer" },
-        b = { "<cmd>HelmDependencyBuildFromBuffer<CR>", "Helm Dependency Build from Buffer" },
-        K = { "<cmd>OpenK9sSplit<CR>", "Split View K9s" },
-        k = { "<cmd>OpenK9s<CR>", "Open K9s" },
-    },
+  k = {
+    name = "Kubernetes",
+    c = { "<cmd>HelmDeployFromBuffer<CR>", "Helm Deploy Buffer to Context" },
+    r = { "<cmd>RemoveDeployment<CR>", "Helm Remove Deployment From Buffer" },
+    d = { "<cmd>HelmDryRun<CR>", "Helm DryRun Buffer" },
+    a = { "<cmd>KubectlApplyFromBuffer<CR>", "Kubectl Apply From Buffer" },
+    D = { "<cmd>DeleteNamespace<CR>", "Kubectl Delete Namespace" },
+    u = { "<cmd>HelmDependencyUpdateFromBuffer<CR>", "Helm Dependency Update" },
+    b = { "<cmd>HelmDependencyBuildFromBuffer<CR>", "Helm Dependency Build" },
+    t = { "<cmd>HelmTemplateFromBuffer<CR>", "Helm Template From Buffer" },
+    K = { "<cmd>OpenK9sSplit<CR>", "Split View K9s" },
+    k = { "<cmd>OpenK9s<CR>", "Open K9s" },
+  },
 }
 
 -- Require the which-key plugin
