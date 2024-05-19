@@ -203,9 +203,7 @@ function Helm.remove_deployment()
 	select_context(function()
 		select_namespace(function(namespace)
 			local release_list = fetch_releases(namespace)
-			if not release_list then
-				return
-			end
+			if not release_list then return end
 			TelescopePicker.select_from_list("Select Release to Remove", release_list, function(release_name)
 				local helm_cmd = string.format("helm uninstall %s -n %s", release_name, namespace)
 				local result, helm_err = Command.run_shell_command(helm_cmd)
