@@ -73,18 +73,18 @@ local function select_namespace(callback)
 end
 
 local function fetch_releases(namespace)
-	local releases_cmd = string.format("helm list -n %s -q", namespace)
-	local releases, err = Command.run_shell_command(releases_cmd)
-	if not releases then
-		log_error(err or "Failed to fetch Helm releases.")
-		return nil
-	end
-	local release_list = vim.split(releases, "\n", true)
-	if #release_list == 0 then
-		log_error("No Helm releases available.")
-		return nil
-	end
-	return release_list
+    local releases_cmd = string.format("helm list -n %s -q", namespace)
+    local releases, err = Command.run_shell_command(releases_cmd)
+    if not releases then
+        log_error(err or "Failed to fetch Helm releases.")
+        return nil
+    end
+    local release_list = vim.split(releases, "\n", true)
+    if #release_list == 0 then
+        log_error("No Helm releases available.")
+        return nil
+    end
+    return release_list
 end
 
 function Helm.dependency_update_from_buffer()
