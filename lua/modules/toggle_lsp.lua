@@ -84,7 +84,6 @@ function M.start_yamlls()
     if client_id then
         vim.lsp.buf_attach_client(0, client_id)
     else
-        print("Failed to start yamlls client")
     end
 end
 
