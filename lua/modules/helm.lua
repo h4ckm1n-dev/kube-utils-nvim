@@ -130,7 +130,6 @@ function Helm.template_from_buffer()
 		vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(template, "\n"))
 		-- Switch to the new buffer
 		vim.api.nvim_set_current_buf(bufnr)
-		print("Helm template generated successfully.")
 	end
 end
 
