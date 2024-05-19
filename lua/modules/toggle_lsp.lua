@@ -2,6 +2,8 @@
 
 local M = {}
 
+local lspconfig = require('lspconfig')
+
 -- Function to stop yamlls client
 function M.stop_yamlls()
     for _, client in pairs(vim.lsp.get_active_clients()) do
@@ -13,7 +15,6 @@ end
 
 -- Function to start yamlls client
 function M.start_yamlls()
-    local lspconfig = require('lspconfig')
     lspconfig.yamlls.setup {
         on_attach = function(client)
             -- Add any custom on_attach behavior here if needed
@@ -28,8 +29,7 @@ function M.start_yamlls()
                     -- ArgoCD ApplicationSet CRD
                     ["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml"] = "",
                     -- ArgoCD Application CRD
-                    ["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/application-crd.yaml"] =
-                    "",
+                    ["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/application-crd.yaml"] = "",
                     -- Kubernetes strict schemas
                     ["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.3-standalone-strict/all.json"] = "",
                 },
@@ -62,8 +62,12 @@ function M.start_yamlls()
             },
         },
     }
-    -- Reload the buffer to attach yamlls again
-    vim.cmd('edit')
+    -- Manually attach yamlls to the current buffer
+    vim.lsp.buf_attach_client(vim.api.nvim_get_current_buf(), vim.lsp.start_client({
+        name = 'yamlls',
+        cmd = lspconfig.yamlls.cmd,
+        root_dir = lspconfig.util.root_pattern("."),
+    }))
 end
 
 -- Function to toggle between yaml and helm filetypes
