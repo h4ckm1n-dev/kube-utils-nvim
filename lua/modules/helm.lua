@@ -34,19 +34,28 @@ function Helm.dependency_update_from_buffer()
 	end
 
 	local chart_directory = file_path:match("(.*/)")
+	if not chart_directory then
+		log_error("Failed to determine chart directory from file path")
+		return
+	end
+
 	local helm_cmd = string.format("helm dependency update %s", chart_directory)
 
 	-- Extract repository information from Chart.yaml
 	local chart_yaml_path = chart_directory .. "Chart.yaml"
 	local repo_name, repo_url = Repository.get_repository_info(chart_yaml_path)
 
-	-- Check if the repository is missing and add it
-	local repo_check_cmd =
-		string.format("helm repo list | grep -q %s || helm repo add %s %s", repo_name, repo_name, repo_url)
-	local _, repo_check_err = Command.run_shell_command(repo_check_cmd)
+	if repo_name and repo_url then
+		-- Check if the repository is missing and add it
+		local repo_check_cmd =
+			string.format("helm repo list | grep -q %s || helm repo add %s %s", repo_name, repo_name, repo_url)
+		local _, repo_check_err = Command.run_shell_command(repo_check_cmd)
 
-	if repo_check_err then
-		print("Adding missing repository: " .. repo_check_err)
+		if repo_check_err then
+			print("Adding missing repository: " .. repo_check_err)
+		end
+	else
+		log_error("Repository information is missing in Chart.yaml")
 	end
 
 	-- Execute the dependency update command
@@ -66,6 +75,11 @@ function Helm.dependency_build_from_buffer()
 	end
 
 	local chart_directory = file_path:match("(.*/)")
+	if not chart_directory then
+		log_error("Failed to determine chart directory from file path")
+		return
+	end
+
 	local helm_cmd = string.format("helm dependency build %s", chart_directory)
 	local result, err = Command.run_shell_command(helm_cmd)
 	if result then
@@ -102,6 +116,11 @@ function Helm.template_from_buffer()
 	end
 
 	local chart_directory = file_path:match("(.*/)")
+	if not chart_directory then
+		log_error("Failed to determine chart directory from file path")
+		return
+	end
+
 	local template = generate_helm_template(chart_directory)
 	if template then
 		-- Open a new tab and create a buffer
@@ -124,6 +143,11 @@ function Helm.deploy_from_buffer()
 				return
 			end
 			local chart_directory = file_path:match("(.*/)")
+			if not chart_directory then
+				log_error("Failed to determine chart directory from file path")
+				return
+			end
+
 			TelescopePicker.input("Enter Release Name", function(chart_name)
 				local helm_cmd = string.format(
 					"helm upgrade --install %s %s --values %s -n %s --create-namespace",
@@ -152,6 +176,11 @@ function Helm.dryrun_from_buffer()
 				return
 			end
 			local chart_directory = file_path:match("(.*/)")
+			if not chart_directory then
+				log_error("Failed to determine chart directory from file path")
+				return
+			end
+
 			TelescopePicker.input("Enter Release Name", function(chart_name)
 				local helm_cmd = string.format(
 					"helm install --dry-run %s %s --values %s -n %s --create-namespace",
