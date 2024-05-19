@@ -5,7 +5,7 @@ local M = {}
 local Helm = require("modules.helm")
 local Kubectl = require("modules.kubectl")
 local K9s = require("modules.k9s")
-local toggle_lsp = require("modules.toggle_lsp") -- Include the toggle LSP module
+local toggle_lsp = require("modules.toggle_lsp")
 
 function M.setup()
 	-- Define a command to call the Helm.template_from_buffer function

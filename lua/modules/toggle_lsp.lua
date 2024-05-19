@@ -15,7 +15,7 @@ end
 
 -- Function to start yamlls client
 function M.start_yamlls()
-    lspconfig.yamlls.setup {
+    local yamlls_config = {
         on_attach = function(client)
             -- Add any custom on_attach behavior here if needed
         end,
@@ -27,11 +27,14 @@ function M.start_yamlls()
                 },
                 schemas = {
                     -- ArgoCD ApplicationSet CRD
-                    ["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml"] = "",
+                    ["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml"] =
+                    "",
                     -- ArgoCD Application CRD
-                    ["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/application-crd.yaml"] = "",
+                    ["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/application-crd.yaml"] =
+                    "",
                     -- Kubernetes strict schemas
-                    ["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.3-standalone-strict/all.json"] = "",
+                    ["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.3-standalone-strict/all.json"] =
+                    "",
                 },
                 validate = true,
                 completion = true,
@@ -62,12 +65,13 @@ function M.start_yamlls()
             },
         },
     }
-    -- Manually attach yamlls to the current buffer
-    vim.lsp.buf_attach_client(vim.api.nvim_get_current_buf(), vim.lsp.start_client({
-        name = 'yamlls',
-        cmd = lspconfig.yamlls.cmd,
-        root_dir = lspconfig.util.root_pattern("."),
-    }))
+
+    local client_id = vim.lsp.start_client(lspconfig.util.default_config, yamlls_config)
+    if client_id then
+        vim.lsp.buf_attach_client(0, client_id)
+    else
+        print("Failed to start yamlls client")
+    end
 end
 
 -- Function to toggle between yaml and helm filetypes
