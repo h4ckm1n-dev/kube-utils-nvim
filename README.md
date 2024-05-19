@@ -32,7 +32,7 @@ return {
 
 ```
 
-Additionaly you can create a witch-key mapping to use the commands (this is also the list of the feature :
+Additionaly you can create a witch-key mapping to use the commands (this is also the list of the feature) :
 
 ```lua
 local helm_mappings = {
