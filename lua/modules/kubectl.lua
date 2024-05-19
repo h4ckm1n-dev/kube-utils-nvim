@@ -37,6 +37,41 @@ local function fetch_namespaces()
 	return namespace_list
 end
 
+function Kubectl.select_context(callback)
+	local context_list = fetch_contexts()
+	if not context_list then
+		return
+	end
+	TelescopePicker.select_from_list("Select Kubernetes Context", context_list, function(selected_context)
+		Command.run_shell_command("kubectl config use-context " .. selected_context)
+		callback(selected_context)
+	end)
+end
+
+function Kubectl.select_namespace(callback)
+	local namespace_list = fetch_namespaces()
+	if not namespace_list then
+		return
+	end
+	table.insert(namespace_list, 1, "[Create New Namespace]")
+	TelescopePicker.select_from_list("Select Namespace", namespace_list, function(selected_namespace)
+		if selected_namespace == "[Create New Namespace]" then
+			TelescopePicker.input("Enter Namespace Name", function(new_ns_name)
+				local create_ns_cmd = string.format("kubectl create namespace %s", new_ns_name)
+				local create_ns_result, create_ns_err = Command.run_shell_command(create_ns_cmd)
+				if create_ns_result then
+					print(string.format("Namespace %s created successfully.", new_ns_name))
+					callback(new_ns_name)
+				else
+					log_error("Failed to create namespace: " .. (create_ns_err or "Unknown error"))
+				end
+			end)
+		else
+			callback(selected_namespace)
+		end
+	end)
+end
+
 function Kubectl.apply_from_buffer()
 	local context_list = fetch_contexts()
 	if not context_list then

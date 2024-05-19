@@ -1,4 +1,5 @@
 -- /home/h4ckm1n/Documents/Divers/kube-utils-nvim/init.lua
+
 local M = {}
 
 local Helm = require("modules.helm")
@@ -7,7 +8,7 @@ local K9s = require("modules.k9s")
 
 function M.setup()
 	-- Define a command to call the Helm.template_from_buffer function
-	vim.api.nvim_create_user_command('HelmTemplateFromBuffer', function()
+	vim.api.nvim_create_user_command("HelmTemplateFromBuffer", function()
 		Helm.template_from_buffer()
 	end, {})
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", function()
