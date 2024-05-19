@@ -13,8 +13,19 @@ function M.stop_yamlls()
     end
 end
 
+-- Function to stop helm_ls client
+function M.stop_helm_ls()
+    for _, client in pairs(vim.lsp.get_active_clients()) do
+        if client.name == 'helm_ls' then
+            client.stop()
+        end
+    end
+end
+
 -- Function to start yamlls client
 function M.start_yamlls()
+    M.stop_helm_ls() -- Ensure helm_ls is stopped before starting yamlls
+
     local yamlls_config = {
         on_attach = function(client)
             -- Add any custom on_attach behavior here if needed
@@ -66,11 +77,37 @@ function M.start_yamlls()
         },
     }
 
-    local client_id = vim.lsp.start_client(lspconfig.util.default_config, yamlls_config)
+    lspconfig.yamlls.setup(yamlls_config)
+
+    -- Attach the new yamlls client to the current buffer
+    local client_id = vim.lsp.start_client(yamlls_config)
     if client_id then
         vim.lsp.buf_attach_client(0, client_id)
     else
         print("Failed to start yamlls client")
+    end
+end
+
+-- Function to start helm_ls client
+function M.start_helm_ls()
+    M.stop_yamlls() -- Ensure yamlls is stopped before starting helm_ls
+
+    local helm_ls_config = {
+        cmd = { "helm_ls" },
+        filetypes = { "helm" },
+        on_attach = function(client)
+            -- Add any custom on_attach behavior here if needed
+        end,
+    }
+
+    lspconfig.helm_ls.setup(helm_ls_config)
+
+    -- Attach the new helm_ls client to the current buffer
+    local client_id = vim.lsp.start_client(helm_ls_config)
+    if client_id then
+        vim.lsp.buf_attach_client(0, client_id)
+    else
+        print("Failed to start helm_ls client")
     end
 end
 
@@ -79,8 +116,10 @@ function M.toggle_yaml_helm()
     if vim.bo.filetype == 'yaml' then
         vim.bo.filetype = 'helm'
         M.stop_yamlls()
+        M.start_helm_ls()
     elseif vim.bo.filetype == 'helm' then
         vim.bo.filetype = 'yaml'
+        M.stop_helm_ls()
         M.start_yamlls()
     end
 end
