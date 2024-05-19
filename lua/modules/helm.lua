@@ -134,15 +134,10 @@ function Helm.dependency_build_from_buffer()
 		log_error("Helm dependency build failed: " .. (err or "Unknown error"))
 	end
 end
-local function generate_helm_template(chart_directory, release_name, values_file, namespace)
-	local helm_cmd = string.format(
-		"helm template %s %s --values %s -n %s",
-		release_name,
-		chart_directory,
-		values_file,
-		namespace
-	)
-	local result, err = Command.run_shell_command(helm_cmd)
+
+local function generate_helm_template(chart_directory)
+	local helm_cmd = "helm template ."
+	local result, err = Command.run_shell_command(helm_cmd, chart_directory)
 	if result and result ~= "" then
 		return result
 	else
@@ -159,21 +154,17 @@ function Helm.template_from_buffer()
 	end
 
 	local chart_directory = file_path:match("(.*/)")
-	TelescopePicker.input("Enter Release Name", function(release_name)
-		TelescopePicker.input("Enter Namespace", function(namespace)
-			local template = generate_helm_template(chart_directory, release_name, file_path, namespace)
-			if template then
-				-- Open a new tab and create a buffer
-				vim.cmd("tabnew")
-				local bufnr = vim.api.nvim_create_buf(false, true)
-				vim.bo[bufnr].filetype = "yaml"
-				vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(template, "\n"))
-				-- Switch to the new buffer
-				vim.api.nvim_set_current_buf(bufnr)
-				print("Helm template generated successfully.")
-			end
-		end)
-	end)
+	local template = generate_helm_template(chart_directory)
+	if template then
+		-- Open a new tab and create a buffer
+		vim.cmd("tabnew")
+		local bufnr = vim.api.nvim_create_buf(false, true)
+		vim.bo[bufnr].filetype = "yaml"
+		vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(template, "\n"))
+		-- Switch to the new buffer
+		vim.api.nvim_set_current_buf(bufnr)
+		print("Helm template generated successfully.")
+	end
 end
 
 function Helm.deploy_from_buffer()
