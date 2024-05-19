@@ -1,4 +1,5 @@
 -- /home/h4ckm1n/Documents/Divers/kube-utils-nvim/init.lua
+
 local M = {}
 
 local Helm = require("modules.helm")
@@ -9,7 +10,7 @@ function M.setup()
 	vim.api.nvim_create_user_command("HelmDeployFromBuffer", function()
 		Helm.deploy_from_buffer()
 	end, {})
-	vim.api.nvim_create_user_command("RemoveDeployment", function()
+	vim.api.nvim_create_user_command("HelmRemoveDeployment", function()
 		Helm.remove_deployment()
 	end, {})
 	vim.api.nvim_create_user_command("HelmDryRun", function()
