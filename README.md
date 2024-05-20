@@ -1,5 +1,7 @@
 # 🚀 Neovim Kubernetes Plugin 🚀
 
+For the lazy, you can install my full lazyvim with kube-utils-nvim installed [![template]](https://github.com/h4ckm1n-dev/h4ckm1n-lazyvim-template)
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
 [![Go](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml/badge.svg)](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml)[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
