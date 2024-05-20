@@ -198,7 +198,7 @@ function Helm.dryrun_from_buffer()
 
 			TelescopePicker.input("Enter Release Name", function(chart_name)
 				local helm_cmd = string.format(
-					"helm install --dry-run %s %s --values %s -n %s --create-namespace",
+					"helm install --dry-run %s %s --values %s -n %s",
 					chart_name,
 					chart_directory,
 					file_path,
