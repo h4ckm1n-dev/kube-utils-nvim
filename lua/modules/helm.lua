@@ -12,17 +12,25 @@ local function log_error(message)
 end
 
 local function fetch_releases(namespace)
+	-- Construct the helm list command with the provided namespace
 	local releases_cmd = string.format("helm list -n %s -q", namespace)
 	local releases, err = Command.run_shell_command(releases_cmd)
-	if not releases then
+
+	-- Check if the command was successful
+	if not releases or releases == "" then
 		log_error(err or "Failed to fetch Helm releases.")
 		return nil
 	end
-	local release_list = vim.split(releases, "\n", true)
+
+	-- Split the releases into a list
+	local release_list = vim.split(releases, "\n", { trimempty = true })
+
+	-- Check if the list is empty
 	if #release_list == 0 then
 		log_error("No Helm releases available.")
 		return nil
 	end
+
 	return release_list
 end
 
@@ -91,7 +99,14 @@ end
 
 local function generate_helm_template(chart_directory)
 	-- Change the current working directory to the chart directory
-	local original_directory = vim.loop.cwd()
+	local original_directory = vim.loop.cwd() or ""
+
+	-- Handle the case where original_directory is nil
+	if original_directory == "" then
+		log_error("Failed to get the current working directory")
+		return "Error: Failed to get the current working directory"
+	end
+
 	vim.loop.chdir(chart_directory)
 
 	local helm_cmd = "helm template ."
@@ -103,8 +118,9 @@ local function generate_helm_template(chart_directory)
 	if result and result ~= "" then
 		return result
 	else
-		log_error("Helm template generation failed: " .. (err or "Unknown error"))
-		return nil
+		local error_message = "Helm template generation failed: " .. (err or "Unknown error")
+		log_error(error_message)
+		return error_message
 	end
 end
 

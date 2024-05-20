@@ -10,30 +10,46 @@ local function log_error(message)
 end
 
 local function fetch_contexts()
+	-- Run the shell command to get Kubernetes contexts
 	local contexts, err = Command.run_shell_command("kubectl config get-contexts -o name")
-	if not contexts then
+
+	-- Check if the command was successful
+	if not contexts or contexts == "" then
 		log_error(err or "Failed to fetch Kubernetes contexts.")
 		return nil
 	end
-	local context_list = vim.split(contexts, "\n", true)
+
+	-- Split the contexts into a list
+	local context_list = vim.split(contexts, "\n", { trimempty = true })
+
+	-- Check if the list is empty
 	if #context_list == 0 then
 		log_error("No Kubernetes contexts available.")
 		return nil
 	end
+
 	return context_list
 end
 
 local function fetch_namespaces()
+	-- Run the shell command to get namespaces
 	local namespaces, err = Command.run_shell_command("kubectl get namespaces | awk 'NR>1 {print $1}'")
-	if not namespaces then
+
+	-- Check if the command was successful
+	if not namespaces or namespaces == "" then
 		log_error("Failed to fetch namespaces: " .. (err or "No namespaces found."))
 		return nil
 	end
-	local namespace_list = vim.split(namespaces, "\n", true)
+
+	-- Split the namespaces into a list
+	local namespace_list = vim.split(namespaces, "\n", { trimempty = true })
+
+	-- Check if the list is empty
 	if #namespace_list == 0 then
 		log_error("No namespaces available.")
 		return nil
 	end
+
 	return namespace_list
 end
 
