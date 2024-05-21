@@ -220,10 +220,18 @@ function Helm.dryrun_from_buffer()
 					return
 				end
 
-				-- Extract console output (lines that do not start with '---' or resource definitions)
+				-- Extract console output (lines that indicate Helm messages)
 				local console_output = {}
 				for _, line in ipairs(vim.split(result, "\n")) do
-					if not line:match("^---") and not line:match("^# Source:") then
+					if
+						line:match("^Release")
+						or line:match("^NAME")
+						or line:match("^LAST DEPLOYED")
+						or line:match("^NAMESPACE")
+						or line:match("^STATUS")
+						or line:match("^REVISION")
+						or line:match("^HOOKS:")
+					then
 						table.insert(console_output, line)
 					end
 				end
