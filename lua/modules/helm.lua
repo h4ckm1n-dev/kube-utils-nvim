@@ -204,14 +204,10 @@ function Helm.dryrun_from_buffer()
 					file_path,
 					namespace
 				)
+				local result, ns_err = Command.run_shell_command(helm_cmd)
 
-				-- Run the helm command and capture its output
-				local handle = io.popen(helm_cmd)
-				local result = handle:read("*a")
-				local _, _, exit_code = handle:close()
-
-				-- Check if the command was successful
-				if exit_code ~= 0 or not result or result == "" then
+				-- Check if the result is nil or empty
+				if not result or result == "" then
 					log_error("Dry run failed: " .. (ns_err or "Unknown error"))
 					return
 				end
