@@ -207,19 +207,23 @@ function Helm.dryrun_from_buffer()
 
 				-- Run the helm command and capture its output
 				local handle = io.popen(helm_cmd)
+				if not handle then
+					log_error("Failed to run Helm command")
+					return
+				end
 				local result = handle:read("*a")
-				local _, _, exit_code = handle:close()
+				local success, _, exit_code = handle:close()
 
 				-- Check if the command was successful
-				if exit_code ~= 0 or not result or result == "" then
-					log_error("Dry run failed: " .. (ns_err or "Unknown error"))
+				if not success or exit_code ~= 0 or not result or result == "" then
+					log_error("Dry run failed")
 					return
 				end
 
-				-- Extract only the console log output
+				-- Extract console output (lines that do not start with '---' or resource definitions)
 				local console_output = {}
 				for _, line in ipairs(vim.split(result, "\n")) do
-					if line:match("^(Error:|WARNING:|INFO:)") then
+					if not line:match("^---") and not line:match("^# Source:") then
 						table.insert(console_output, line)
 					end
 				end
@@ -232,13 +236,14 @@ function Helm.dryrun_from_buffer()
 				-- Prepare the lines to set in the buffer
 				local buffer_lines = vim.split(result, "\n")
 
-				-- Add console output as comments at the end of the buffer lines
+				-- Add console output as comments at the beginning of the buffer lines
 				if #console_output > 0 then
-					table.insert(buffer_lines, "")
-					table.insert(buffer_lines, "# Console output:")
+					local commented_output = {}
 					for _, line in ipairs(console_output) do
-						table.insert(buffer_lines, "# " .. line)
+						table.insert(commented_output, "# " .. line)
 					end
+					table.insert(commented_output, "") -- Add an empty line after comments
+					buffer_lines = vim.list_extend(commented_output, buffer_lines)
 				end
 
 				vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, buffer_lines)
@@ -248,6 +253,18 @@ function Helm.dryrun_from_buffer()
 			end)
 		end)
 	end)
+end
+
+-- Example of running a shell command and returning the output (mocked)
+Command = {}
+function Command.run_shell_command(cmd)
+	local handle = io.popen(cmd)
+	local result = handle:read("*a")
+	local _, _, exit_code = handle:close()
+	if exit_code ~= 0 then
+		return result, "Command failed"
+	end
+	return result, nil
 end
 
 function Helm.remove_deployment()
