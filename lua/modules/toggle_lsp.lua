@@ -104,7 +104,6 @@ function M.start_helm_ls()
 	if client_id then
 		lsp.buf_attach_client(0, client_id)
 	else
-		print("Failed to start helm_ls client")
 	end
 end
 

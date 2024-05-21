@@ -206,15 +206,39 @@ function Helm.dryrun_from_buffer()
 				)
 				local result, ns_err = Command.run_shell_command(helm_cmd)
 
+				-- Check if the result is nil or empty
+				if not result or result == "" then
+					log_error("Dry run failed: " .. (ns_err or "Unknown error"))
+					return
+				end
+
+				-- Extract only the console log output
+				local console_output = {}
+				for _, line in ipairs(vim.split(result, "\n")) do
+					if line:match("^(Error:|WARNING:|INFO:)") then
+						table.insert(console_output, line)
+					end
+				end
+
 				-- Open a new tab and create a buffer
 				vim.cmd("tabnew")
 				local bufnr = vim.api.nvim_create_buf(false, true)
 				vim.bo[bufnr].filetype = "yaml"
-				if result and result ~= "" then
-					vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, vim.split(result, "\n"))
-				else
-					log_error("Dry run failed: " .. (ns_err or "Unknown error"))
+
+				-- Prepare the lines to set in the buffer
+				local buffer_lines = vim.split(result, "\n")
+
+				-- Add console output as comments at the end of the buffer lines
+				if #console_output > 0 then
+					table.insert(buffer_lines, "")
+					table.insert(buffer_lines, "# Console output:")
+					for _, line in ipairs(console_output) do
+						table.insert(buffer_lines, "# " .. line)
+					end
 				end
+
+				vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, buffer_lines)
+
 				-- Switch to the new buffer
 				vim.api.nvim_set_current_buf(bufnr)
 			end)
