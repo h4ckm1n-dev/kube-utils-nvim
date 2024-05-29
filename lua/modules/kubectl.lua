@@ -1,13 +1,10 @@
 -- modules/kubectl.lua
 
+local Utils = require("modules.utils")
 local Command = require("modules.command")
 local TelescopePicker = require("modules.telescope_picker")
 
 local Kubectl = {}
-
-local function log_error(message)
-	print("Error: " .. message)
-end
 
 local function fetch_contexts()
 	-- Run the shell command to get Kubernetes contexts
@@ -15,7 +12,7 @@ local function fetch_contexts()
 
 	-- Check if the command was successful
 	if not contexts or contexts == "" then
-		log_error(err or "Failed to fetch Kubernetes contexts.")
+		Utils.log_error(err or "Failed to fetch Kubernetes contexts.")
 		return nil
 	end
 
@@ -24,7 +21,7 @@ local function fetch_contexts()
 
 	-- Check if the list is empty
 	if #context_list == 0 then
-		log_error("No Kubernetes contexts available.")
+		Utils.log_error("No Kubernetes contexts available.")
 		return nil
 	end
 
@@ -37,7 +34,7 @@ local function fetch_namespaces()
 
 	-- Check if the command was successful
 	if not namespaces or namespaces == "" then
-		log_error("Failed to fetch namespaces: " .. (err or "No namespaces found."))
+		Utils.log_error("Failed to fetch namespaces: " .. (err or "No namespaces found."))
 		return nil
 	end
 
@@ -46,7 +43,7 @@ local function fetch_namespaces()
 
 	-- Check if the list is empty
 	if #namespace_list == 0 then
-		log_error("No namespaces available.")
+		Utils.log_error("No namespaces available.")
 		return nil
 	end
 
@@ -79,7 +76,7 @@ function Kubectl.select_namespace(callback)
 					print(string.format("Namespace %s created successfully.", new_ns_name))
 					callback(new_ns_name)
 				else
-					log_error("Failed to create namespace: " .. (create_ns_err or "Unknown error"))
+					Utils.log_error("Failed to create namespace: " .. (create_ns_err or "Unknown error"))
 				end
 			end)
 		else
@@ -105,7 +102,7 @@ function Kubectl.apply_from_buffer()
 		TelescopePicker.select_from_list("Select Namespace", namespace_list, function(selected_namespace)
 			local file_path = vim.api.nvim_buf_get_name(0)
 			if file_path == "" then
-				log_error("No file selected")
+				Utils.log_error("No file selected")
 				return
 			end
 
@@ -114,7 +111,7 @@ function Kubectl.apply_from_buffer()
 			if result and result ~= "" then
 				print("kubectl apply successful: \n" .. result)
 			else
-				log_error("kubectl apply failed: " .. (apply_err or "Unknown error"))
+				Utils.log_error("kubectl apply failed: " .. (apply_err or "Unknown error"))
 			end
 		end)
 	end)
@@ -146,7 +143,7 @@ function Kubectl.select_and_delete_namespace()
 			if result then
 				print("Namespace " .. selected_namespace .. " successfully deleted.")
 			else
-				log_error("Failed to delete namespace " .. selected_namespace .. ": " .. (err or "Unknown error"))
+				Utils.log_error("Failed to delete namespace " .. selected_namespace .. ": " .. (err or "Unknown error"))
 			end
 		else
 			print("Deletion cancelled.")

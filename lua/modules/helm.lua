@@ -4,12 +4,9 @@ local Command = require("modules.command")
 local Repository = require("modules.repository")
 local TelescopePicker = require("modules.telescope_picker")
 local Kubectl = require("modules.kubectl")
+local Utils = require("modules.utils")
 
 local Helm = {}
-
-local function log_error(message)
-	print("Error: " .. message)
-end
 
 local function fetch_releases(namespace)
 	-- Construct the helm list command with the provided namespace
@@ -18,7 +15,7 @@ local function fetch_releases(namespace)
 
 	-- Check if the command was successful
 	if not releases or releases == "" then
-		log_error(err or "Failed to fetch Helm releases.")
+		Utils.log_error(err or "Failed to fetch Helm releases.")
 		return nil
 	end
 
@@ -27,7 +24,7 @@ local function fetch_releases(namespace)
 
 	-- Check if the list is empty
 	if #release_list == 0 then
-		log_error("No Helm releases available.")
+		Utils.log_error("No Helm releases available.")
 		return nil
 	end
 
@@ -37,13 +34,13 @@ end
 function Helm.dependency_update_from_buffer()
 	local file_path = vim.api.nvim_buf_get_name(0)
 	if file_path == "" then
-		log_error("No file selected")
+		Utils.log_error("No file selected")
 		return
 	end
 
 	local chart_directory = file_path:match("(.*/)")
 	if not chart_directory then
-		log_error("Failed to determine chart directory from file path")
+		Utils.log_error("Failed to determine chart directory from file path")
 		return
 	end
 
@@ -63,7 +60,7 @@ function Helm.dependency_update_from_buffer()
 			print("Adding missing repository: " .. repo_check_err)
 		end
 	else
-		log_error("Repository information is missing in Chart.yaml")
+		Utils.log_error("Repository information is missing in Chart.yaml")
 	end
 
 	-- Execute the dependency update command
@@ -71,20 +68,20 @@ function Helm.dependency_update_from_buffer()
 	if result then
 		print("Helm dependency update successful: \n" .. result)
 	else
-		log_error("Helm dependency update failed: " .. (err or "Unknown error"))
+		Utils.log_error("Helm dependency update failed: " .. (err or "Unknown error"))
 	end
 end
 
 function Helm.dependency_build_from_buffer()
 	local file_path = vim.api.nvim_buf_get_name(0)
 	if file_path == "" then
-		log_error("No file selected")
+		Utils.log_error("No file selected")
 		return
 	end
 
 	local chart_directory = file_path:match("(.*/)")
 	if not chart_directory then
-		log_error("Failed to determine chart directory from file path")
+		Utils.log_error("Failed to determine chart directory from file path")
 		return
 	end
 
@@ -93,7 +90,7 @@ function Helm.dependency_build_from_buffer()
 	if result then
 		print("Helm dependency build successful: \n" .. result)
 	else
-		log_error("Helm dependency build failed: " .. (err or "Unknown error"))
+		Utils.log_error("Helm dependency build failed: " .. (err or "Unknown error"))
 	end
 end
 
@@ -103,7 +100,7 @@ local function generate_helm_template(chart_directory)
 
 	-- Handle the case where original_directory is nil
 	if original_directory == "" then
-		log_error("Failed to get the current working directory")
+		Utils.log_error("Failed to get the current working directory")
 		return "Error: Failed to get the current working directory"
 	end
 
@@ -119,7 +116,7 @@ local function generate_helm_template(chart_directory)
 		return result
 	else
 		local error_message = "Helm template generation failed: " .. (err or "Unknown error")
-		log_error(error_message)
+		Utils.log_error(error_message)
 		return error_message
 	end
 end
@@ -127,13 +124,13 @@ end
 function Helm.template_from_buffer()
 	local file_path = vim.api.nvim_buf_get_name(0)
 	if file_path == "" then
-		log_error("No file selected")
+		Utils.log_error("No file selected")
 		return
 	end
 
 	local chart_directory = file_path:match("(.*/)")
 	if not chart_directory then
-		log_error("Failed to determine chart directory from file path")
+		Utils.log_error("Failed to determine chart directory from file path")
 		return
 	end
 
@@ -154,12 +151,12 @@ function Helm.deploy_from_buffer()
 		Kubectl.select_namespace(function(namespace)
 			local file_path = vim.api.nvim_buf_get_name(0)
 			if file_path == "" then
-				log_error("No file selected")
+				Utils.log_error("No file selected")
 				return
 			end
 			local chart_directory = file_path:match("(.*/)")
 			if not chart_directory then
-				log_error("Failed to determine chart directory from file path")
+				Utils.log_error("Failed to determine chart directory from file path")
 				return
 			end
 
@@ -175,7 +172,7 @@ function Helm.deploy_from_buffer()
 				if result and result ~= "" then
 					print("Deployment successful: \n" .. result)
 				else
-					log_error("Deployment failed: " .. (helm_err or "Unknown error"))
+					Utils.log_error("Deployment failed: " .. (helm_err or "Unknown error"))
 				end
 			end)
 		end)
@@ -187,12 +184,12 @@ function Helm.dryrun_from_buffer()
 		Kubectl.select_namespace(function(namespace)
 			local file_path = vim.api.nvim_buf_get_name(0)
 			if file_path == "" then
-				log_error("No file selected")
+				Utils.log_error("No file selected")
 				return
 			end
 			local chart_directory = file_path:match("(.*/)")
 			if not chart_directory then
-				log_error("Failed to determine chart directory from file path")
+				Utils.log_error("Failed to determine chart directory from file path")
 				return
 			end
 
@@ -208,7 +205,7 @@ function Helm.dryrun_from_buffer()
 
 				-- Check if the result is nil or empty
 				if not result or result == "" then
-					log_error("Dry run failed: " .. (ns_err or "Unknown error"))
+					Utils.log_error("Dry run failed: " .. (ns_err or "Unknown error"))
 					return
 				end
 
@@ -259,7 +256,7 @@ function Helm.remove_deployment()
 				if result and result ~= "" then
 					print("Deployment removal successful: \n" .. result)
 				else
-					log_error("Deployment removal failed: " .. (helm_err or "Unknown error"))
+					Utils.log_error("Deployment removal failed: " .. (helm_err or "Unknown error"))
 				end
 			end)
 		end)
