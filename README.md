@@ -93,4 +93,4 @@ This plugin is licensed under the MIT License. See the LICENSE file for details.
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
-# If you have any suggestion on function to add, feel free to create a issue
+# If you have any suggestion on function to add, feel free to create a issue or PR
