@@ -24,8 +24,8 @@ return {
         "h4ckm1n-dev/kube-utils-nvim",
         -- dir = "/local/path/to/plugin",
         branch = "main", -- comment to use local folder
-        lazy = true,  -- Enable lazy loading for this plugin
-        event = "BufReadPost",  -- Load the plugin when a buffer is read
+        lazy = true,
+        event = "VeryLazy",
         config = function()
             require("init").setup()
         end,
