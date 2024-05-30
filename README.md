@@ -24,12 +24,13 @@ return {
         "h4ckm1n-dev/kube-utils-nvim",
         -- dir = "/local/path/to/plugin",
         branch = "main", -- comment to use local folder
+        lazy = true,  -- Enable lazy loading for this plugin
+        event = "BufReadPost",  -- Load the plugin when a buffer is read
         config = function()
             require("init").setup()
         end,
     },
 }
-
 ```
 
 Additionaly you can create a witch-key mapping to use the commands (this is also the list of the feature) :
