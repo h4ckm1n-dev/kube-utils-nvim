@@ -3,7 +3,9 @@
 For the lazy, you can install my full config lazyvim with kube-utils-nvim installed [[template]](https://github.com/h4ckm1n-dev/h4ckm1n-lazyvim-template)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This Neovim plugin provides seamless integration with Kubernetes and Helm, allowing you to deploy and manage Kubernetes resources directly from your editor.
@@ -23,6 +25,7 @@ Install the plugin using your preferred package manager (below is an example usi
 return {
   {
     "h4ckm1n-dev/kube-utils-nvim",
+    dependencies = { "nvim-telescope/telescope.nvim" },
     config = function()
       require("init").setup()
     end,

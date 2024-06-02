@@ -12,7 +12,21 @@ local function invoke_callback(callback, value)
 	end
 end
 
+local function check_telescope()
+	if not pcall(require, "telescope") then
+		error("Cannot find telescope!")
+	end
+	return true
+end
+
 function TelescopePicker.select_from_list(prompt_title, list, callback)
+	local pickers, finders, config, actions
+	if check_telescope() then
+		pickers = require("telescope.pickers")
+		finders = require("telescope.finders")
+		config = require("telescope.config")
+		actions = require("telescope.actions")
+	end
 	if type(list) ~= "table" or #list == 0 then
 		Utils.log_error("List must be a non-empty table.")
 		return
@@ -23,15 +37,15 @@ function TelescopePicker.select_from_list(prompt_title, list, callback)
 		return
 	end
 
-	require("telescope.pickers")
+	pickers
 		.new({}, {
 			prompt_title = prompt_title,
-			finder = require("telescope.finders").new_table({ results = list }),
-			sorter = require("telescope.config").values.generic_sorter({}),
+			finder = finders.new_table({ results = list }),
+			sorter = config.values.generic_sorter({}),
 			attach_mappings = function(_, map)
 				map("i", "<CR>", function(prompt_bufnr)
-					local selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
-					require("telescope.actions").close(prompt_bufnr)
+					local selection = actions.get_selected_entry(prompt_bufnr)
+					actions.close(prompt_bufnr)
 					if selection then
 						invoke_callback(callback, selection.value)
 					end
