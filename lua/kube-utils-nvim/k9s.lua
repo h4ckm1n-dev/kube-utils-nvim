@@ -17,7 +17,7 @@ local function set_terminal_keymaps(bufnr)
 end
 
 -- Open K9s in a floating window
-function K9s.open()
+K9s.open = function()
 	local k9s_cmd = "k9s"
 
 	-- Calculate window dimensions and position
@@ -51,7 +51,7 @@ function K9s.open()
 end
 
 -- Open K9s in a vertical split
-function K9s.open_split()
+K9s.open_split = function()
 	vim.cmd("vnew | terminal k9s")
 	local bufnr = vim.api.nvim_get_current_buf()
 	set_terminal_keymaps(bufnr)

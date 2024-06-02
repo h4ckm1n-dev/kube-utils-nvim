@@ -3,7 +3,7 @@
 local Utils = {}
 
 -- Function log_error
-function Utils.log_error(message)
+Utils.log_error = function(message)
 	print("Error: " .. message)
 end
 

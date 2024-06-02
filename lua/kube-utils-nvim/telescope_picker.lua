@@ -40,7 +40,7 @@ function TelescopePicker.select_from_list(prompt_title, list, callback)
 		:find()
 end
 
-function TelescopePicker.input(prompt_title, callback)
+TelescopePicker.input = function(prompt_title, callback)
 	if type(callback) ~= "function" then
 		print("Error: Callback must be a function.")
 		return

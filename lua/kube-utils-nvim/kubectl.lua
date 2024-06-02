@@ -50,7 +50,7 @@ local function fetch_namespaces()
 	return namespace_list
 end
 
-function Kubectl.select_context(callback)
+Kubectl.select_context = function(callback)
 	local context_list = fetch_contexts()
 	if not context_list then
 		return
@@ -61,7 +61,7 @@ function Kubectl.select_context(callback)
 	end)
 end
 
-function Kubectl.select_namespace(callback)
+Kubectl.select_namespace = function(callback)
 	local namespace_list = fetch_namespaces()
 	if not namespace_list then
 		return
@@ -85,7 +85,7 @@ function Kubectl.select_namespace(callback)
 	end)
 end
 
-function Kubectl.apply_from_buffer()
+Kubectl.apply_from_buffer = function()
 	local context_list = fetch_contexts()
 	if not context_list then
 		return
@@ -117,7 +117,7 @@ function Kubectl.apply_from_buffer()
 	end)
 end
 
-function Kubectl.delete_namespace()
+Kubectl.delete_namespace = function()
 	local context_list = fetch_contexts()
 	if not context_list then
 		return
@@ -129,7 +129,7 @@ function Kubectl.delete_namespace()
 	end)
 end
 
-function Kubectl.select_and_delete_namespace()
+Kubectl.select_and_delete_namespace = function()
 	local namespace_list = fetch_namespaces()
 	if not namespace_list then
 		return

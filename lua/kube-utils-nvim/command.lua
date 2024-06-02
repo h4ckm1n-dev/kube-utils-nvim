@@ -4,7 +4,7 @@ local Utils = require("kube-utils-nvim.utils")
 
 local Command = {}
 
-function Command.run_shell_command(cmd)
+Command.run_shell_command = function(cmd)
 	-- Attempt to open a pipe to run the command and capture both stdout and stderr
 	local handle, err = io.popen(cmd .. " 2>&1", "r")
 	if not handle then

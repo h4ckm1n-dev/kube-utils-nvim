@@ -31,7 +31,7 @@ local function fetch_releases(namespace)
 	return release_list
 end
 
-function Helm.dependency_update_from_buffer()
+Helm.dependency_update_from_buffer = function()
 	local file_path = vim.api.nvim_buf_get_name(0)
 	if file_path == "" then
 		Utils.log_error("No file selected")
@@ -72,7 +72,7 @@ function Helm.dependency_update_from_buffer()
 	end
 end
 
-function Helm.dependency_build_from_buffer()
+Helm.dependency_build_from_buffer = function()
 	local file_path = vim.api.nvim_buf_get_name(0)
 	if file_path == "" then
 		Utils.log_error("No file selected")
@@ -121,7 +121,7 @@ local function generate_helm_template(chart_directory)
 	end
 end
 
-function Helm.template_from_buffer()
+Helm.template_from_buffer = function()
 	local file_path = vim.api.nvim_buf_get_name(0)
 	if file_path == "" then
 		Utils.log_error("No file selected")
@@ -146,7 +146,7 @@ function Helm.template_from_buffer()
 	end
 end
 
-function Helm.deploy_from_buffer()
+Helm.deploy_from_buffer = function()
 	Kubectl.select_context(function()
 		Kubectl.select_namespace(function(namespace)
 			local file_path = vim.api.nvim_buf_get_name(0)
@@ -179,7 +179,7 @@ function Helm.deploy_from_buffer()
 	end)
 end
 
-function Helm.dryrun_from_buffer()
+Helm.dryrun_from_buffer = function()
 	Kubectl.select_context(function()
 		Kubectl.select_namespace(function(namespace)
 			local file_path = vim.api.nvim_buf_get_name(0)
@@ -243,7 +243,7 @@ function Helm.dryrun_from_buffer()
 	end)
 end
 
-function Helm.remove_deployment()
+Helm.remove_deployment = function()
 	Kubectl.select_context(function()
 		Kubectl.select_namespace(function(namespace)
 			local release_list = fetch_releases(namespace)
