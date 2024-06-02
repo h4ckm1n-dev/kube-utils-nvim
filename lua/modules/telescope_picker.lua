@@ -6,18 +6,18 @@ local function invoke_callback(callback, value)
 	if type(callback) == "function" then
 		callback(value)
 	else
-		print("Error: Callback is not a function.")
+		Utils.log_error("Callback is not a function.")
 	end
 end
 
 function TelescopePicker.select_from_list(prompt_title, list, callback)
 	if type(list) ~= "table" or #list == 0 then
-		print("Error: List must be a non-empty table.")
+		Utils.log_error("List must be a non-empty table.")
 		return
 	end
 
 	if type(callback) ~= "function" then
-		print("Error: Callback must be a function.")
+		Utils.log_error("Callback must be a function.")
 		return
 	end
 
@@ -42,7 +42,7 @@ end
 
 function TelescopePicker.input(prompt_title, callback)
 	if type(callback) ~= "function" then
-		print("Error: Callback must be a function.")
+		Utils.log_error("Callback must be a function.")
 		return
 	end
 
@@ -50,7 +50,7 @@ function TelescopePicker.input(prompt_title, callback)
 	if input ~= "" then
 		invoke_callback(callback, input)
 	else
-		print("Error: " .. prompt_title .. " cannot be empty.")
+		Utils.log_error("" .. prompt_title .. " cannot be empty.")
 	end
 end
 

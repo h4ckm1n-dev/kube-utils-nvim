@@ -1,5 +1,7 @@
 -- modules/repository.lua
 
+local Utils = require("modules.utils")
+
 local Repository = {}
 
 -- Function to read and parse the Chart.yaml file
@@ -9,14 +11,14 @@ function Repository.get_repository_info(chart_yaml_path)
 
 	-- Check if Chart.yaml exists
 	if vim.fn.filereadable(chart_yaml_path) ~= 1 then
-		print("Error: Chart.yaml not found at " .. chart_yaml_path)
+		Utils.log_error("Chart.yaml not found at " .. chart_yaml_path)
 		return nil, nil
 	end
 
 	-- Read the contents of Chart.yaml
 	local chart_yaml_contents = vim.fn.readfile(chart_yaml_path)
 	if not chart_yaml_contents then
-		print("Error: Failed to read Chart.yaml")
+		Utils.log_error("Failed to read Chart.yaml")
 		return nil, nil
 	end
 
@@ -31,10 +33,10 @@ function Repository.get_repository_info(chart_yaml_path)
 	end
 
 	if repo_name == "" then
-		print("Error: Repository name not found in Chart.yaml")
+		Utils.log_error("Repository name not found in Chart.yaml")
 	end
 	if repo_url == "" then
-		print("Error: Repository URL not found in Chart.yaml")
+		Utils.log_error("Repository URL not found in Chart.yaml")
 	end
 
 	return repo_name, repo_url
