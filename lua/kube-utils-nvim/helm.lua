@@ -1,10 +1,10 @@
--- modules/helm.lua
+-- kube-utils-nvim/helm.lua
 
-local Command = require("modules.command")
-local Repository = require("modules.repository")
-local TelescopePicker = require("modules.telescope_picker")
-local Kubectl = require("modules.kubectl")
-local Utils = require("modules.utils")
+local Command = require("kube-utils-nvim.command")
+local Repository = require("kube-utils-nvim.repository")
+local TelescopePicker = require("kube-utils-nvim.telescope_picker")
+local Kubectl = require("kube-utils-nvim.kubectl")
+local Utils = require("kube-utils-nvim.utils")
 
 local Helm = {}
 

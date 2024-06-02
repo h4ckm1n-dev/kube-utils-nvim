@@ -1,8 +1,8 @@
--- modules/kubectl.lua
+-- kube-utils-nvim/kubectl.lua
 
-local Utils = require("modules.utils")
-local Command = require("modules.command")
-local TelescopePicker = require("modules.telescope_picker")
+local Utils = require("kube-utils-nvim.utils")
+local Command = require("kube-utils-nvim.command")
+local TelescopePicker = require("kube-utils-nvim.telescope_picker")
 
 local Kubectl = {}
 

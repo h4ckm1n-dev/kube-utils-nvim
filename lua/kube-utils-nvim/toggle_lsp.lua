@@ -4,6 +4,10 @@ local M = {}
 local lspconfig = require("lspconfig")
 local lsp = vim.lsp
 
+M.setup = function(opts)
+	config = opts
+end
+
 -- Function to stop yamlls client
 function M.stop_yamlls()
 	for _, client in pairs(lsp.get_clients()) do
@@ -36,14 +40,7 @@ function M.start_yamlls()
 					enable = true,
 					url = "https://www.schemastore.org/api/json/catalog.json",
 				},
-				schemas = {
-					-- ArgoCD ApplicationSet CRD
-					["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml"] = "",
-					-- ArgoCD Application CRD
-					["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/application-crd.yaml"] = "",
-					-- Kubernetes strict schemas
-					["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.3-standalone-strict/all.json"] = "",
-				},
+				schemas = config.toggle_lsp.schemas,
 				validate = true,
 				completion = true,
 				hover = true,

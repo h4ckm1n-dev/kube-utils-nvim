@@ -1,4 +1,4 @@
--- modules/telescope_picker.lua
+-- kube-utils-nvim/telescope_picker.lua
 
 local TelescopePicker = {}
 

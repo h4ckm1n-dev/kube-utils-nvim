@@ -1,6 +1,6 @@
--- modules/command.lua
+-- kube-utils-nvim/command.lua
 
-local Utils = require("modules.utils")
+local Utils = require("kube-utils-nvim.utils")
 
 local Command = {}
 

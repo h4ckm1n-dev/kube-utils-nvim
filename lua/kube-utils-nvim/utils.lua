@@ -1,4 +1,4 @@
--- modules/utils.lua
+-- kube-utils-nvim/utils.lua
 
 local Utils = {}
 

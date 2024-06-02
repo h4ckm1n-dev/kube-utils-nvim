@@ -1,4 +1,4 @@
--- modules/repository.lua
+-- kube-utils-nvim/repository.lua
 
 local Repository = {}
 

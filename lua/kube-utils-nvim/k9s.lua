@@ -1,4 +1,4 @@
--- modules/k9s.lua
+-- kube-utils-nvim/k9s.lua
 
 local K9s = {}
 
