@@ -21,11 +21,13 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 Install the plugin using your preferred package manager (below is an example using lazy.nvim):
 
 ```lua
--- File: plugins/kube-utils.lua
+-- ~/.config/nvim/lua/plugins/kube-utils.lua
 return {
   {
     "h4ckm1n-dev/kube-utils-nvim",
     dependencies = { "nvim-telescope/telescope.nvim" },
+    lazy = true,        -- Enable lazy loading for this plugin
+    event = "VeryLazy", -- Load the plugin when Neovim starts
     opts = {},
   },
 }
