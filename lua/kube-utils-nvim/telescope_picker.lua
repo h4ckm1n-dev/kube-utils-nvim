@@ -1,4 +1,6 @@
 -- kube-utils-nvim/telescope_picker.lua
+--
+local Utils = require("kube-utils-nvim.utils")
 
 local TelescopePicker = {}
 
@@ -6,30 +8,46 @@ local function invoke_callback(callback, value)
 	if type(callback) == "function" then
 		callback(value)
 	else
-		print("Error: Callback is not a function.")
+		Utils.log_error("Callback is not a function.")
 	end
 end
 
+local function check_telescope()
+	if not pcall(require, "telescope") then
+		error("Cannot find telescope!")
+	end
+	return true
+end
+
 function TelescopePicker.select_from_list(prompt_title, list, callback)
+	local pickers, finders, config, actions
+	if check_telescope() then
+		pickers = require("telescope.pickers")
+		finders = require("telescope.finders")
+		config = require("telescope.config")
+		actions = require("telescope.actions")
+		state = require("telescope.actions.state")
+	end
+
 	if type(list) ~= "table" or #list == 0 then
-		print("Error: List must be a non-empty table.")
+		Utils.log_error("List must be a non-empty table.")
 		return
 	end
 
 	if type(callback) ~= "function" then
-		print("Error: Callback must be a function.")
+		Utils.log_error("Callback must be a function.")
 		return
 	end
 
-	require("telescope.pickers")
+	pickers
 		.new({}, {
 			prompt_title = prompt_title,
-			finder = require("telescope.finders").new_table({ results = list }),
-			sorter = require("telescope.config").values.generic_sorter({}),
+			finder = finders.new_table({ results = list }),
+			sorter = config.values.generic_sorter({}),
 			attach_mappings = function(_, map)
 				map("i", "<CR>", function(prompt_bufnr)
-					local selection = require("telescope.actions.state").get_selected_entry(prompt_bufnr)
-					require("telescope.actions").close(prompt_bufnr)
+					local selection = state.get_selected_entry(prompt_bufnr)
+					actions.close(prompt_bufnr)
 					if selection then
 						invoke_callback(callback, selection.value)
 					end
@@ -42,7 +60,7 @@ end
 
 TelescopePicker.input = function(prompt_title, callback)
 	if type(callback) ~= "function" then
-		print("Error: Callback must be a function.")
+		Utils.log_error("Callback must be a function.")
 		return
 	end
 
@@ -50,7 +68,7 @@ TelescopePicker.input = function(prompt_title, callback)
 	if input ~= "" then
 		invoke_callback(callback, input)
 	else
-		print("Error: " .. prompt_title .. " cannot be empty.")
+		Utils.log_error("" .. prompt_title .. " cannot be empty.")
 	end
 end
 
