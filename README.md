@@ -25,6 +25,7 @@ Install the plugin using your preferred package manager (below is an example usi
 return {
   {
     "h4ckm1n-dev/kube-utils-nvim",
+    dependencies = { "nvim-telescope/telescope.nvim" },
     opts = {},
   },
 }

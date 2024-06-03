@@ -4,7 +4,7 @@ local Utils = {}
 
 -- Function log_error
 Utils.log_error = function(message)
-	print("Error: " .. message)
+	vim.notify("Error: " .. message, vim.log.levels.ERROR)
 end
 
 return Utils
