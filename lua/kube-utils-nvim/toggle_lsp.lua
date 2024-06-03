@@ -101,7 +101,6 @@ M.start_helm_ls = function()
 	local client_id = lsp.start_client(helm_ls_config)
 	if client_id then
 		lsp.buf_attach_client(0, client_id)
-	else
 	end
 end
 
