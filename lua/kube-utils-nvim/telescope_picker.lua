@@ -20,7 +20,7 @@ local function check_telescope()
 end
 
 function TelescopePicker.select_from_list(prompt_title, list, callback)
-	local pickers, finders, config, actions
+	local pickers, finders, config, actions, state
 	if check_telescope() then
 		pickers = require("telescope.pickers")
 		finders = require("telescope.finders")
@@ -46,7 +46,7 @@ function TelescopePicker.select_from_list(prompt_title, list, callback)
 			sorter = config.values.generic_sorter({}),
 			attach_mappings = function(_, map)
 				map("i", "<CR>", function(prompt_bufnr)
-					local selection = state.get_selected_entry(prompt_bufnr)
+					local selection = state.get_selected_entry()
 					actions.close(prompt_bufnr)
 					if selection then
 						invoke_callback(callback, selection.value)

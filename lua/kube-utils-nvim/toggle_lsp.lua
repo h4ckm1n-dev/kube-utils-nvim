@@ -4,8 +4,10 @@ local M = {}
 local lspconfig = require("lspconfig")
 local lsp = vim.lsp
 
+local config = {}
+
 M.setup = function(opts)
-	config = opts
+	config = opts or {}
 end
 
 -- Function to stop yamlls client
@@ -40,7 +42,7 @@ M.start_yamlls = function()
 					enable = true,
 					url = "https://www.schemastore.org/api/json/catalog.json",
 				},
-				schemas = config.toggle_lsp.schemas,
+				schemas = config.toggle_lsp and config.toggle_lsp.schemas or {},
 				validate = true,
 				completion = true,
 				hover = true,
@@ -100,20 +102,6 @@ M.start_helm_ls = function()
 	local client_id = lsp.start_client(helm_ls_config)
 	if client_id then
 		lsp.buf_attach_client(0, client_id)
-	else
-	end
-end
-
--- Function to toggle between yaml and helm filetypes
-M.toggle_yaml_helm = function()
-	if vim.bo.filetype == "yaml" then
-		vim.bo.filetype = "helm"
-		M.stop_yamlls()
-		M.start_helm_ls()
-	elseif vim.bo.filetype == "helm" then
-		vim.bo.filetype = "yaml"
-		M.stop_helm_ls()
-		M.start_yamlls()
 	end
 end
 
