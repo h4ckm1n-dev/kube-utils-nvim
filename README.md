@@ -4,7 +4,7 @@ For the lazy, you can install my full config lazyvim with kube-utils-nvim instal
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
-[![Go](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml/badge.svg)](https://github.com/h4ckm1n-dev/helm-utils-nvim/actions/workflows/lualint.yml)[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
@@ -21,17 +21,13 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 Install the plugin using your preferred package manager (below is an example using lazy.nvim):
 
 ```lua
+-- File: plugins/kube-utils.lua
 return {
-    {
-        "h4ckm1n-dev/kube-utils-nvim",
-        -- dir = "/local/path/to/plugin",
-        branch = "main", -- comment to use local folder
-        config = function()
-            require("init").setup()
-        end,
-    },
+  {
+    "h4ckm1n-dev/kube-utils-nvim",
+    opts = {},
+  },
 }
-
 ```
 
 Additionaly you can create a witch-key mapping to use the commands (this is also the list of the feature) :
@@ -82,6 +78,7 @@ This plugin is licensed under the MIT License. See the LICENSE file for details.
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/h4ckm1n-dev"><img src="https://avatars.githubusercontent.com/u/97511408?v=4?s=100" width="100px;" alt="h4ckm1n"/><br /><sub><b>h4ckm1n</b></sub></a><br /><a href="https://github.com/h4ckm1n-dev/kube-utils-nvim/commits?author=h4ckm1n-dev" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ohdearaugustin"><img src="https://avatars.githubusercontent.com/u/14001491?v=4?s=100" width="100px;" alt="ohdearaugustin"/><br /><sub><b>ohdearaugustin</b></sub></a><br /><a href="https://github.com/h4ckm1n-dev/kube-utils-nvim/commits?author=ohdearaugustin" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
@@ -93,4 +90,4 @@ This plugin is licensed under the MIT License. See the LICENSE file for details.
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
-# If you have any suggestion on function to add, feel free to create a issue
+# If you have any suggestion on function to add, feel free to create a issue or PR

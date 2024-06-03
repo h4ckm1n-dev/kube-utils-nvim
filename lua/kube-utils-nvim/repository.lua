@@ -1,9 +1,9 @@
--- modules/repository.lua
+-- kube-utils-nvim/repository.lua
 
 local Repository = {}
 
 -- Function to read and parse the Chart.yaml file
-function Repository.get_repository_info(chart_yaml_path)
+Repository.get_repository_info = function(chart_yaml_path)
 	local repo_name = ""
 	local repo_url = ""
 

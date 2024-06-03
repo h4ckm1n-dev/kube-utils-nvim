@@ -4,8 +4,12 @@ local M = {}
 local lspconfig = require("lspconfig")
 local lsp = vim.lsp
 
+M.setup = function(opts)
+	config = opts
+end
+
 -- Function to stop yamlls client
-function M.stop_yamlls()
+M.stop_yamlls = function()
 	for _, client in pairs(lsp.get_clients()) do
 		if client.name == "yamlls" then
 			client.stop()
@@ -14,7 +18,7 @@ function M.stop_yamlls()
 end
 
 -- Function to stop helm_ls client
-function M.stop_helm_ls()
+M.stop_helm_ls = function()
 	for _, client in pairs(lsp.get_clients()) do
 		if client.name == "helm_ls" then
 			client.stop()
@@ -23,7 +27,7 @@ function M.stop_helm_ls()
 end
 
 -- Function to start yamlls client
-function M.start_yamlls()
+M.start_yamlls = function()
 	M.stop_helm_ls() -- Ensure helm_ls is stopped before starting yamlls
 
 	local yamlls_config = {
@@ -36,14 +40,7 @@ function M.start_yamlls()
 					enable = true,
 					url = "https://www.schemastore.org/api/json/catalog.json",
 				},
-				schemas = {
-					-- ArgoCD ApplicationSet CRD
-					["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml"] = "",
-					-- ArgoCD Application CRD
-					["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/application-crd.yaml"] = "",
-					-- Kubernetes strict schemas
-					["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.3-standalone-strict/all.json"] = "",
-				},
+				schemas = config.toggle_lsp.schemas,
 				validate = true,
 				completion = true,
 				hover = true,
@@ -85,7 +82,7 @@ function M.start_yamlls()
 end
 
 -- Function to start helm_ls client
-function M.start_helm_ls()
+M.start_helm_ls = function()
 	M.stop_yamlls() -- Ensure yamlls is stopped before starting helm_ls
 
 	local helm_ls_config = {
@@ -108,7 +105,7 @@ function M.start_helm_ls()
 end
 
 -- Function to toggle between yaml and helm filetypes
-function M.toggle_yaml_helm()
+M.toggle_yaml_helm = function()
 	if vim.bo.filetype == "yaml" then
 		vim.bo.filetype = "helm"
 		M.stop_yamlls()

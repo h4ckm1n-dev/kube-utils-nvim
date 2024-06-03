@@ -2,12 +2,25 @@
 
 local M = {}
 
-local Helm = require("modules.helm")
-local Kubectl = require("modules.kubectl")
-local K9s = require("modules.k9s")
-local toggle_lsp = require("modules.toggle_lsp")
+local Helm = require("kube-utils-nvim.helm")
+local Kubectl = require("kube-utils-nvim.kubectl")
+local K9s = require("kube-utils-nvim.k9s")
+local toggle_lsp = require("kube-utils-nvim.toggle_lsp")
 
-function M.setup()
+local default_opts = {
+	toggle_lsp = {
+		schemas = {
+			-- ArgoCD ApplicationSet CRD
+			["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/applicationset-crd.yaml"] = "",
+			-- ArgoCD Application CRD
+			["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/application-crd.yaml"] = "",
+			-- Kubernetes strict schemas
+			["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.3-standalone-strict/all.json"] = "",
+		},
+	},
+}
+
+M.setup_commands = function()
 	-- Define a command to call the Helm.template_from_buffer function
 	vim.api.nvim_create_user_command("HelmTemplateFromBuffer", function()
 		Helm.template_from_buffer()
@@ -48,6 +61,13 @@ function M.setup()
 	vim.api.nvim_create_user_command("ToggleYamlHelm", function()
 		toggle_lsp.toggle_yaml_helm()
 	end, {})
+end
+
+M.setup = function(config)
+	local opts = config and vim.tbl_deep_extend("force", default_opts, config) or default_opts
+
+	require("kube-utils-nvim.toggle_lsp").setup(opts)
+	M.setup_commands()
 end
 
 return M
