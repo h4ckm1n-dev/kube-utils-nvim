@@ -3,6 +3,7 @@ local M = {}
 
 local lspconfig = require("lspconfig")
 local lsp = vim.lsp
+local config
 
 M.setup = function(opts)
 	config = opts
