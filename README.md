@@ -16,7 +16,6 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 ![Capture d’écran du 2024-05-11 18-32-41](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/c6139ddf-e9af-4665-bd57-a829b236bac2)
 ![Capture d’écran du 2024-05-11 18-33-09](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/8c3cbaf8-d3c0-44a8-b487-4858e06b86f7)
 ![Capture d’écran du 2024-06-09 22-50-06](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/b5c1158e-5c93-41aa-b9ee-6fa5e2d0cb2b)
-![Capture d’écran du 2024-06-09 22-50-12](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/12d1f64d-240c-4013-945b-cbfacca1391f)
 
 ## Installation
 
