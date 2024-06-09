@@ -50,6 +50,79 @@ local function fetch_namespaces()
 	return namespace_list
 end
 
+local function fetch_crds()
+	-- Run the shell command to get CRDs
+	local crds, err = Command.run_shell_command("kubectl get crd -o name")
+
+	-- Check if the command was successful
+	if not crds or crds == "" then
+		Utils.log_error(err or "Failed to fetch CRDs: Command returned no output.")
+		return nil
+	end
+
+	-- Split the CRDs into a list
+	local crd_list = vim.split(crds, "\n", { trimempty = true })
+
+	-- Check if the list is empty
+	if #crd_list == 0 then
+		Utils.log_error("No CRDs available.")
+		return nil
+	end
+
+	return crd_list
+end
+
+local function fetch_crd_details(crd_name, namespace)
+	-- Run the shell command to get CRD details
+	local crd_details, err = Command.run_shell_command("kubectl get " .. crd_name .. " -n " .. namespace .. " -o yaml")
+
+	-- Check if the command was successful
+	if not crd_details or crd_details == "" then
+		Utils.log_error(err or "Failed to fetch CRD details: Command returned no output.")
+		return nil
+	end
+
+	return crd_details
+end
+
+Kubectl.select_crd = function()
+	-- Step 1: Select a context
+	local context_list = fetch_contexts()
+	if not context_list then
+		return
+	end
+	TelescopePicker.select_from_list("Select Kubernetes Context", context_list, function(selected_context)
+		Command.run_shell_command("kubectl config use-context " .. selected_context)
+
+		-- Step 2: Select a namespace
+		local namespace_list = fetch_namespaces()
+		if not namespace_list then
+			return
+		end
+		TelescopePicker.select_from_list("Select Namespace", namespace_list, function(selected_namespace)
+			-- Step 3: Select a CRD
+			local crd_list = fetch_crds()
+			if not crd_list then
+				return
+			end
+			TelescopePicker.select_from_list("Select CRD", crd_list, function(selected_crd)
+				-- Step 4: Fetch the selected CRD details
+				local crd_details = fetch_crd_details(selected_crd, selected_namespace)
+				if not crd_details then
+					return
+				end
+
+				-- Step 5: Open the CRD details in a new buffer and save it
+				vim.api.nvim_command("new")
+				local buf = vim.api.nvim_get_current_buf()
+				vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(crd_details, "\n"))
+				vim.api.nvim_buf_set_name(buf, selected_crd .. ".yaml")
+				vim.bo[buf].filetype = "yaml"
+			end)
+		end)
+	end)
+end
+
 Kubectl.select_context = function(callback)
 	local context_list = fetch_contexts()
 	if not context_list then
