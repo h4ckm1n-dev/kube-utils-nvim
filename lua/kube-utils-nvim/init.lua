@@ -62,9 +62,7 @@ M.setup_commands = function()
 		toggle_lsp.toggle_yaml_helm()
 	end, {})
 	vim.api.nvim_create_user_command("SelectCRD", function()
-		Kubectl.select_crd(function(crd)
-			print("CRD selected: " .. crd)
-		end)
+		Kubectl.select_crd()
 	end, {})
 end
 
