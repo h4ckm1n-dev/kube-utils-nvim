@@ -106,8 +106,9 @@ Kubectl.select_crd = function()
 			end
 
 			-- Step 5: Open the CRD details in a new buffer and save it
-			vim.api.nvim_command("new")
-			local buf = vim.api.nvim_get_current_buf()
+			vim.api.nvim_command("vsplit")
+			local buf = vim.api.nvim_create_buf(false, true)
+			vim.api.nvim_set_current_buf(buf)
 			vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(crd_details, "\n"))
 			vim.api.nvim_buf_set_name(buf, selected_crd .. ".yaml")
 			vim.bo[buf].filetype = "yaml"
