@@ -51,7 +51,7 @@ local function fetch_namespaces()
 end
 
 local function fetch_crds()
-	-- Run the shell command to get all CRDs
+	-- Run the shell command to get CRDs
 	local crds, err = Command.run_shell_command("kubectl get crd -o name")
 
 	-- Check if the command was successful
@@ -72,39 +72,17 @@ local function fetch_crds()
 	return crd_list
 end
 
-local function fetch_cr_instances(crd_name)
-	-- Run the shell command to get instances of a specific CRD
-	local cr_instances, err = Command.run_shell_command("kubectl get " .. crd_name .. " -o name")
+local function fetch_crd_details(crd_name, namespace)
+	-- Run the shell command to get CRD details
+	local crd_details, err = Command.run_shell_command("kubectl get " .. crd_name .. " -n " .. namespace .. " -o yaml")
 
 	-- Check if the command was successful
-	if not cr_instances or cr_instances == "" then
-		Utils.log_error(err or "Failed to fetch CR instances: Command returned no output.")
+	if not crd_details or crd_details == "" then
+		Utils.log_error(err or "Failed to fetch CRD details: Command returned no output.")
 		return nil
 	end
 
-	-- Split the CR instances into a list
-	local cr_instance_list = vim.split(cr_instances, "\n", { trimempty = true })
-
-	-- Check if the list is empty
-	if #cr_instance_list == 0 then
-		Utils.log_error("No CR instances available.")
-		return nil
-	end
-
-	return cr_instance_list
-end
-
-local function fetch_cr_details(crd_name, cr_instance)
-	-- Run the shell command to get CR details
-	local cr_details, err = Command.run_shell_command("kubectl get " .. crd_name .. "/" .. cr_instance .. " -o yaml")
-
-	-- Check if the command was successful
-	if not cr_details or cr_details == "" then
-		Utils.log_error(err or "Failed to fetch CR details: Command returned no output.")
-		return nil
-	end
-
-	return cr_details
+	return crd_details
 end
 
 Kubectl.select_crd = function()
@@ -116,29 +94,29 @@ Kubectl.select_crd = function()
 	TelescopePicker.select_from_list("Select Kubernetes Context", context_list, function(selected_context)
 		Command.run_shell_command("kubectl config use-context " .. selected_context)
 
-		-- Step 2: Select a CRD
-		local crd_list = fetch_crds()
-		if not crd_list then
+		-- Step 2: Select a namespace
+		local namespace_list = fetch_namespaces()
+		if not namespace_list then
 			return
 		end
-		TelescopePicker.select_from_list("Select CRD", crd_list, function(selected_crd)
-			-- Step 3: Select a CR instance within the selected CRD
-			local cr_instance_list = fetch_cr_instances(selected_crd)
-			if not cr_instance_list then
+		TelescopePicker.select_from_list("Select Namespace", namespace_list, function(selected_namespace)
+			-- Step 3: Select a CRD
+			local crd_list = fetch_crds()
+			if not crd_list then
 				return
 			end
-			TelescopePicker.select_from_list("Select CR Instance", cr_instance_list, function(selected_cr_instance)
-				-- Step 4: Fetch the selected CR instance details
-				local cr_details = fetch_cr_details(selected_crd, selected_cr_instance)
-				if not cr_details then
+			TelescopePicker.select_from_list("Select CRD", crd_list, function(selected_crd)
+				-- Step 4: Fetch the selected CRD details
+				local crd_details = fetch_crd_details(selected_crd, selected_namespace)
+				if not crd_details then
 					return
 				end
 
-				-- Step 5: Open the CR instance details in a new buffer and save it
+				-- Step 5: Open the CRD details in a new buffer and save it
 				vim.api.nvim_command("new")
 				local buf = vim.api.nvim_get_current_buf()
-				vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(cr_details, "\n"))
-				vim.api.nvim_buf_set_name(buf, selected_cr_instance .. ".yaml")
+				vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(crd_details, "\n"))
+				vim.api.nvim_buf_set_name(buf, selected_crd .. ".yaml")
 				vim.bo[buf].filetype = "yaml"
 			end)
 		end)
