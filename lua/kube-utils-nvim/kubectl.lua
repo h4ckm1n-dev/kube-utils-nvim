@@ -105,12 +105,20 @@ Kubectl.select_crd = function()
 				return
 			end
 
-			-- Step 5: Open the CRD details in a new buffer and save it
+			-- Function to safely rename buffer
+			local function safe_set_buf_name(buf, name)
+				local ok, err = pcall(vim.api.nvim_buf_set_name, buf, name)
+				if not ok then
+					print("Failed to rename buffer: " .. err)
+				end
+			end
+
+			-- Step 5: Open the CRD details in a new buffer with a vertical split and save it
 			vim.api.nvim_command("vsplit")
 			local buf = vim.api.nvim_create_buf(false, true)
 			vim.api.nvim_set_current_buf(buf)
 			vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(crd_details, "\n"))
-			vim.api.nvim_buf_set_name(buf, selected_crd .. ".yaml")
+			safe_set_buf_name(buf, selected_crd .. ".yaml")
 			vim.bo[buf].filetype = "yaml"
 		end)
 	end)
