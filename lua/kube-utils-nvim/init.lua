@@ -15,7 +15,8 @@ local default_opts = {
 			-- ArgoCD Application CRD
 			["https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/crds/application-crd.yaml"] = "",
 			-- Kubernetes strict schemas
-			["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.3-standalone-strict/all.json"] = "",
+			["https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.29.3-standalone-strict/all.json"] =
+			"",
 		},
 	},
 }
@@ -63,6 +64,10 @@ M.setup_commands = function()
 	end, {})
 	vim.api.nvim_create_user_command("SelectCRD", function()
 		Kubectl.select_crd()
+	end, {})
+	-- Register split command
+	vim.api.nvim_create_user_command("SelectSplitCRD", function()
+		Kubectl.select_crd_split()
 	end, {})
 end
 

@@ -114,6 +114,45 @@ Kubectl.select_crd = function()
 			end
 
 			-- Step 5: Open the CRD details in a new buffer with a vertical split and save it
+			vim.api.nvim_command("new")
+			local buf = vim.api.nvim_create_buf(false, true)
+			vim.api.nvim_set_current_buf(buf)
+			vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(crd_details, "\n"))
+			safe_set_buf_name(buf, selected_crd .. ".yaml")
+			vim.bo[buf].filetype = "yaml"
+		end)
+	end)
+end
+
+Kubectl.select_crd_split = function()
+	-- Step 1: Select a context
+	local context_list = fetch_contexts()
+	if not context_list then
+		return
+	end
+	TelescopePicker.select_from_list("Select Kubernetes Context", context_list, function(selected_context)
+		Command.run_shell_command("kubectl config use-context " .. selected_context)
+		-- Step 3: Select a CRD
+		local crd_list = fetch_crds()
+		if not crd_list then
+			return
+		end
+		TelescopePicker.select_from_list("Select CRD", crd_list, function(selected_crd)
+			-- Step 4: Fetch the selected CRD details
+			local crd_details = fetch_crd_details(selected_crd)
+			if not crd_details then
+				return
+			end
+
+			-- Function to safely rename buffer
+			local function safe_set_buf_name(buf, name)
+				local ok, err = pcall(vim.api.nvim_buf_set_name, buf, name)
+				if not ok then
+					print("Failed to rename buffer: " .. err)
+				end
+			end
+
+			-- Step 5: Open the CRD details in a new buffer with a vertical split and save it
 			vim.api.nvim_command("vsplit")
 			local buf = vim.api.nvim_create_buf(false, true)
 			vim.api.nvim_set_current_buf(buf)

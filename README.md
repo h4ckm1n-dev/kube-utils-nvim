@@ -52,6 +52,7 @@ local helm_mappings = {
     k = { "<cmd>OpenK9s<CR>", "Open K9s" },
     l = { "<cmd>ToggleYamlHelm<CR>", "Toggle YAML/Helm" },
     c = { "<cmd>SelectCRD<CR>", "Download CRD" },
+    C = { "<cmd>SelectSplitCRD<CR>", "Download CRD Split" },
   },
 }
 
