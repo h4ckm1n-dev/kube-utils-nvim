@@ -7,29 +7,29 @@ local function FormatJsonLogs()
 	local formatted_lines = { "[" }
 
 	for i, line in ipairs(lines) do
-		local json_part = line:match("{.*}")
+		local json_part = line:match("{.*}") -- Extract JSON if present
+		local success, json_data = pcall(vim.fn.json_decode, json_part or "{}")
+		json_data = success and json_data or {}
+
+		-- Regular expressions to capture log metadata from unstructured parts
 		local timestamp = line:match("^(%d%d%d%d%-%d%d%-%d%dT%d%d:%d%d:%d%dZ)")
 		local log_level = line:match("%d%d%d%d%-%d%d%-%d%dT%d%d:%d%d:%d%dZ%s+([A-Z]+)%s+")
 		local module = line:match("%d%d%d%d%-%d%d%-%d%dT%d%d:%d%d:%d%dZ%s+[A-Z]+%s+([%w%.%-_]+)%s+")
+		local message = line:match("%d%d%d%d%-%d%d%-%d%dT%d%d:%d%d:%d%dZ%s+[A-Z]+%s+[%w%.%-_]+%s+(.*)")
 
-		local success, json_data = pcall(vim.fn.json_decode, json_part)
-		json_data = success and json_data or {} -- Ensure json_data is always a table
+		local log_entry = {
+			timestamp = timestamp or "unknown",
+			log_level = log_level or "INFO",
+			module = module,
+			message = message or line, -- Use the entire line as message if specific parsing fails
+		}
 
-		local ordered_json_data = { timestamp = timestamp }
-		if log_level then
-			ordered_json_data.log_level = log_level
-		end
-		if module then
-			ordered_json_data.module = module
-		end
-
+		-- Merge structured JSON data with extracted data
 		for key, value in pairs(json_data) do
-			if key ~= "timestamp" and key ~= "log_level" and key ~= "module" then
-				ordered_json_data[key] = value
-			end
+			log_entry[key] = value
 		end
 
-		local json_text = vim.fn.json_encode(ordered_json_data)
+		local json_text = vim.fn.json_encode(log_entry)
 		table.insert(formatted_lines, "\t" .. json_text .. (i < #lines and "," or ""))
 	end
 
