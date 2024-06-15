@@ -53,6 +53,7 @@ local helm_mappings = {
     l = { "<cmd>ToggleYamlHelm<CR>", "Toggle YAML/Helm" },
     c = { "<cmd>SelectCRD<CR>", "Download CRD" },
     C = { "<cmd>SelectSplitCRD<CR>", "Download CRD Split" },
+    jl = { "<cmd>JsonFormatLogs<CR>", "Format JSON" },
   },
 }
 
