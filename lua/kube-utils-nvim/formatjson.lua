@@ -68,40 +68,69 @@ end
 local function parseLogMetadata(line)
 	local log_level = parseLogLevel(line)
 	local module = "unknown"
-	local timestamp = parseTimestamp(line)
-
-	-- Assume JSON starts with '{' character
 	local json_start = line:find("{")
-	local structured_data, message
+	local structured_data = nil
+	local message = line
+	local plain_text_message = line
 
+	-- Parse structured JSON data if present
 	if json_start then
 		local json_possible = line:sub(json_start)
 		local status, json_data = pcall(vim.fn.json_decode, json_possible)
 		if status then
 			structured_data = json_data
 			message = "Structured JSON data present"
-		else
-			message = line:sub(1, json_start - 1) -- Fallback to plain text up to JSON start
+			plain_text_message = line:sub(1, json_start - 1)
 		end
-	else
-		message = line -- Use the whole line as message if no JSON is found
 	end
 
-	return timestamp, log_level, module, message, structured_data
+	-- Extract the timestamp first
+	local timestamp = parseTimestamp(line)
+
+	-- Remove the timestamp from the line to prevent it from being matched as a module
+	if timestamp ~= "unknown" then
+		line = line:gsub(timestamp, "")
+	end
+
+	-- Match module patterns, ensuring no common timestamp formats are matched
+	local parsed = false
+	for _, pattern in ipairs(module_patterns) do
+		local matched_module = line:match(pattern)
+		if matched_module and not matched_module:match("%d%d:%d%d:%d%d") then -- Avoid matching timestamps
+			module = matched_module
+			parsed = true
+			break
+		end
+	end
+
+	-- If nothing could be parsed, keep the full message
+	if not parsed then
+		message = line
+	end
+
+	return log_level, module, message, structured_data, plain_text_message
 end
 
 local function FormatJsonLogs()
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 	local formatted_lines = { "[" }
 	for i, line in ipairs(lines) do
-		local timestamp, log_level, module, message, structured_data = parseLogMetadata(line)
+		local timestamp = parseTimestamp(line) or "unknown"
+		local log_level, module, message, structured_data, plain_text_message = parseLogMetadata(line)
 		local log_entry = {
 			timestamp = timestamp,
 			log_level = log_level,
-			module = module,
+			module = module or "unknown",
 			message = message,
-			structured_data = structured_data,
+			plain_text_message = plain_text_message,
 		}
+		if structured_data then
+			log_entry.structured_data = structured_data
+		end
+		-- Remove plain_text_message if it is the same as message
+		if log_entry.message == log_entry.plain_text_message then
+			log_entry.plain_text_message = nil
+		end
 		local json_text = vim.fn.json_encode(log_entry)
 		table.insert(formatted_lines, "\t" .. json_text .. (i < #lines and "," or ""))
 	end
