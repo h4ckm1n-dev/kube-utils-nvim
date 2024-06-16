@@ -2,21 +2,47 @@
 
 local M = {}
 
+local module_patterns = {
+	-- Python modules with log level in square brackets
+	"%w+%.py%[%a+%]", -- e.g., "main.py[DEBUG]"
+	-- Generic module with numbers (e.g., CRON jobs, systemd, etc.)
+	"%a[%a%d._/-]+%[%d+%]", -- e.g., "CRON[329707]", "systemd-logind[1227]"
+	-- pam_unix specific pattern
+	"pam_unix%([^:]+%):", -- e.g., "pam_unix(sudo:session):"
+	-- General modules with log level in square brackets
+	"[%a_]+%.[%a_]+%[%a+%]", -- e.g., "util.py[DEBUG]"
+	-- Generic paths and modules with various separators
+	"%S+/%S+", -- e.g., "setup.version/version/version.go"
+	-- Modules with multiple components separated by colons
+	"[%w_.-]+:[%w_.-]+:[%w_.-]+", -- e.g., "module:function:label"
+	-- More general module patterns with log level
+	"[%a_][%a%d._-]*%[%a+%]", -- e.g., "module[DEBUG]"
+	-- PostgreSQL logs: include database and function names
+	"%w+%.%w+%[%w+%]", -- e.g., "database.function[CONTEXT]"
+	-- Go modules with file paths
+	"[%w_/]+%.go:%d+", -- e.g., "main.go:123"
+	-- Java logs with package and class names
+	"[%w$.]+%.java:%d+", -- e.g., "com.example.MyClass.java:45"
+	-- Generic modules with file extensions and line numbers
+	"[%w_/%.]+%.%a+:%d+", -- e.g., "path/to/file.ext:123"
+}
+
+local patterns = {
+	"%d%d%d%d%-%d%d%-%d%d[T ]%d%d:%d%d:%d%d[%.%d]*[+-]%d%d:?%d%d", -- ISO 8601 with milliseconds and timezone
+	"%d%d%d%d%-%d%d%-%d%d[T ]%d%d:%d%d:%d%d[%.%d]*Z?", -- ISO 8601 with optional milliseconds and 'T'
+	"%d%d%d%d%-%d%d%-%d%d[T ]%d%d:%d%d:%d%d[+-]%d%d:?%d%d", -- ISO 8601 with time zone
+	"%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d,%d%d%d", -- YYYY-MM-DD HH:MM:SS,SSS
+	"%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d", -- YYYY-MM-DD HH:MM:SS
+	"%d+%.%d+", -- Unix timestamp with milliseconds
+	"%d+", -- Unix timestamp (seconds since Unix epoch)
+	"%d%d/%d%d/%d%d%d%d %d%d:%d%d:%d%d", -- MM/DD/YYYY HH:MM:SS
+	"%d%d%-%d%d%-%d%d%d%d %d%d:%d%d:%d%d", -- MM-DD-YYYY HH:MM:SS
+	"%a%a%a %d%d %d%d:%d%d:%d%d %d%d%d%d", -- RFC 2822 with day of the week
+	"%a%a%a %a%a%a %d%d %d%d:%d%d:%d%d %d%d%d%d", -- Full RFC 2822
+	"%d%d%a%a%a%d%d%d%d %d%d:%d%d:%d%d", -- Custom Kubernetes format
+}
+
 local function parseTimestamp(line)
-	local patterns = {
-		"%d%d%d%d%-%d%d%-%d%d[T ]%d%d:%d%d:%d%d[%.%d]*[+-]%d%d:?%d%d", -- ISO 8601 with milliseconds and timezone
-		"%d%d%d%d%-%d%d%-%d%d[T ]%d%d:%d%d:%d%d[%.%d]*Z?", -- ISO 8601 with optional milliseconds and 'T'
-		"%d%d%d%d%-%d%d%-%d%d[T ]%d%d:%d%d:%d%d[+-]%d%d:?%d%d", -- ISO 8601 with time zone
-		"%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d,%d%d%d", -- YYYY-MM-DD HH:MM:SS,SSS
-		"%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d", -- YYYY-MM-DD HH:MM:SS
-		"%d+%.%d+", -- Unix timestamp with milliseconds
-		"%d+", -- Unix timestamp (seconds since Unix epoch)
-		"%d%d/%d%d/%d%d%d%d %d%d:%d%d:%d%d", -- MM/DD/YYYY HH:MM:SS
-		"%d%d%-%d%d%-%d%d%d%d %d%d:%d%d:%d%d", -- MM-DD-YYYY HH:MM:SS
-		"%a%a%a %d%d %d%d:%d%d:%d%d %d%d%d%d", -- RFC 2822 with day of the week
-		"%a%a%a %a%a%a %d%d %d%d:%d%d:%d%d %d%d%d%d", -- Full RFC 2822
-		"%d%d%a%a%a%d%d%d%d %d%d:%d%d:%d%d", -- Custom Kubernetes format
-	}
 	for _, pattern in ipairs(patterns) do
 		local timestamp = line:match(pattern)
 		if timestamp then
@@ -44,6 +70,7 @@ local function parseLogLevel(line)
 	return "INFO"
 end
 
+-- Enhanced function to parse log metadata, ensuring modules are not mistaken for timestamps
 local function parseLogMetadata(line)
 	local log_level = parseLogLevel(line)
 	local message = line
@@ -61,17 +88,10 @@ local function parseLogMetadata(line)
 		end
 	end
 
-	-- Regex to capture Kubernetes specific identifiers like module paths
-	local module_patterns = {
-		"%a[%a%d._/-]+%[%d+%]", -- Matches module patterns like "CRON[329707]", "systemd-logind[1227]"
-		"%S+/%S+", -- Matches module paths like "setup.version/version/version.go"
-		"%w+%.py%[%a+%]", -- Matches patterns like "main.py[DEBUG]"
-		"%S+", -- Match any non-space sequence
-	}
-
+	-- Try to match module patterns, ensuring no common timestamp formats are matched
 	for _, pattern in ipairs(module_patterns) do
 		local matched_module = line:match(pattern)
-		if matched_module and not matched_module:match("%d%d%d%d%-%d%d%-%d%d") then -- Avoid matching timestamps
+		if matched_module and not matched_module:match("%d%d:%d%d:%d%d") then -- Avoid matching timestamps
 			module = matched_module
 			break
 		end
