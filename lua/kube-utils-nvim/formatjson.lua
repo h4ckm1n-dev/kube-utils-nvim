@@ -1,8 +1,7 @@
 -- kube-utils-nvim/formatjson.lua
 
 local M = {}
-
--- TODO: Add more patterns for various log formats
+-- TODO: Add more patterns for modules
 local module_patterns = {
 	"%w+%.py%[%a+%]", -- Python modules with log level in square brackets
 	"%a[%a%d._/-]+%[%d+%]", -- Generic module with numbers (e.g., CRON jobs, systemd, etc.)
@@ -54,12 +53,18 @@ local function parseLogLevel(line)
 	local lower_line = line:lower()
 	for _, log_level in ipairs(log_level_patterns) do
 		if lower_line:find(log_level.pattern) then
-			return log_level.level
+			if log_level.level == "LEVEL" then
+				local number = lower_line:match("level%((%-?%d+)%)")
+				return "LEVEL(" .. number .. ")"
+			else
+				return log_level.level
+			end
 		end
 	end
-	return "INFO" -- Default log level
+	return "INFO"
 end
 
+-- Function to parse log metadata, ensuring modules are not mistaken for timestamps
 local function parseLogMetadata(line)
 	local log_level = parseLogLevel(line)
 	local module = "unknown"
