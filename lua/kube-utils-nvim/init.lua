@@ -1,5 +1,3 @@
--- /kube-utils-nvim/lua/init.lua
-
 local M = {}
 
 local Helm = require("kube-utils-nvim.helm")
@@ -65,12 +63,14 @@ M.setup_commands = function()
 	vim.api.nvim_create_user_command("SelectCRD", function()
 		Kubectl.select_crd()
 	end, {})
-	-- Register split command
 	vim.api.nvim_create_user_command("SelectSplitCRD", function()
 		Kubectl.select_crd_split()
 	end, {})
 	vim.api.nvim_create_user_command("JsonFormatLogs", function()
 		JsonLogFormatter.format()
+	end, {})
+	vim.api.nvim_create_user_command("ViewPodLogs", function()
+		Kubectl.view_pod_logs()
 	end, {})
 end
 
