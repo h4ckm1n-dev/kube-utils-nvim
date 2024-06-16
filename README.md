@@ -16,7 +16,8 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 - **K9s Integration:** Open k9s from nvim
 
 #### Screenshots
-Here are some visual previews of the plugin in action:
+Here are some visual previews of the plugin in action
+
 Telescope NS selector :
 - ![Screenshot 1](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/bbfe3a51-6117-413f-9d31-9f66517994c2)
 K9S module:
