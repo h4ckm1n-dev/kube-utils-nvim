@@ -51,26 +51,42 @@ Use the following mappings to access Kubernetes features efficiently:
 ```lua
 local helm_mappings = {
   k = {
-    name = "Kubernetes",
-    d = { "<cmd>HelmDeployFromBuffer<CR>", "Helm Deploy Buffer to Context" },
-    r = { "<cmd>RemoveDeployment<CR>", "Helm Remove Deployment From Buffer" },
-    T = { "<cmd>HelmDryRun<CR>", "Helm DryRun Buffer" },
-    a = { "<cmd>KubectlApplyFromBuffer<CR>", "Kubectl Apply From Buffer" },
-    D = { "<cmd>DeleteNamespace<CR>", "Kubectl Delete Namespace" },
-    u = { "<cmd>HelmDependencyUpdateFromBuffer<CR>", "Helm Dependency Update" },
-    b = { "<cmd>HelmDependencyBuildFromBuffer<CR>", "Helm Dependency Build" },
-    t = { "<cmd>HelmTemplateFromBuffer<CR>", "Helm Template From Buffer" },
-    K = { "<cmd>OpenK9sSplit<CR>", "Split View K9s" },
-    k = { "<cmd>OpenK9s<CR>", "Open K9s" },
-    l = { "<cmd>ToggleYamlHelm<CR>", "Toggle YAML/Helm" },
-    c = { "<cmd>SelectCRD<CR>", "Download CRD" },
-    C = { "<cmd>SelectSplitCRD<CR>", "Download CRD Split" },
-    jf = { "<cmd>JsonFormatLogs<CR>", "Format JSON" },
-    jv = { "<cmd>ViewPodLogs<CR>", "View Pod Logs" },
+    name = "Kubernetes", -- Main title for all Kubernetes related commands
+
+    -- Helm Commands
+    h = {
+      name = "+Helm",
+      d = { "<cmd>HelmDeployFromBuffer<CR>", "Helm Deploy Buffer to Context" },
+      r = { "<cmd>RemoveDeployment<CR>", "Helm Remove Deployment From Buffer" },
+      T = { "<cmd>HelmDryRun<CR>", "Helm DryRun Buffer" },
+      u = { "<cmd>HelmDependencyUpdateFromBuffer<CR>", "Helm Dependency Update" },
+      b = { "<cmd>HelmDependencyBuildFromBuffer<CR>", "Helm Dependency Build" },
+      t = { "<cmd>HelmTemplateFromBuffer<CR>", "Helm Template From Buffer" },
+    },
+
+    -- Kubectl Commands
+    k = {
+      name = "+Kubectl",
+      a = { "<cmd>KubectlApplyFromBuffer<CR>", "Kubectl Apply From Buffer" },
+      D = { "<cmd>DeleteNamespace<CR>", "Kubectl Delete Namespace" },
+      K = { "<cmd>OpenK9s<CR>", "Open K9s" },
+      k = { "<cmd>OpenK9sSplit<CR>", "Split View K9s" },
+      l = { "<cmd>ToggleYamlHelm<CR>", "Toggle YAML/Helm" },
+      c = { "<cmd>SelectCRD<CR>", "Download CRD" },
+      C = { "<cmd>SelectSplitCRD<CR>", "Download CRD Split" },
+    },
+
+    -- Logs Commands
+    l = {
+      name = "+Logs",
+      f = { "<cmd>JsonFormatLogs<CR>", "Format JSON" },
+      v = { "<cmd>ViewPodLogs<CR>", "View Pod Logs" },
+    },
   },
 }
+
 -- Register the Helm keybindings with a specific prefix
-wk.register(helm_mappings, { prefix = "<leader>" })
+require('which-key').register(helm_mappings, { prefix = "<leader>" })
 ```
 ## Requirements
 
