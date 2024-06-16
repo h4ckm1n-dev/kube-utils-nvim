@@ -39,7 +39,7 @@ return {
 ```
 ## Key Bindings
 Use the following mappings to access Kubernetes features efficiently:
-```
+```lua
 local helm_mappings = {
   k = {
     name = "Kubernetes",
