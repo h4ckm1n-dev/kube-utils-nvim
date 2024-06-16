@@ -329,7 +329,7 @@ Kubectl.view_pod_logs = function()
                 local function safe_set_buf_name(buf, name)
                     local ok, err = pcall(vim.api.nvim_buf_set_name, buf, name)
                     if not ok then
-                        print("Failed to rename buffer: " .. err)
+                        Utils.log_error("Failed to rename buffer: " .. err)
                     end
                 end
 

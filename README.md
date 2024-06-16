@@ -57,8 +57,8 @@ local helm_mappings = {
     l = { "<cmd>ToggleYamlHelm<CR>", "Toggle YAML/Helm" },
     c = { "<cmd>SelectCRD<CR>", "Download CRD" },
     C = { "<cmd>SelectSplitCRD<CR>", "Download CRD Split" },
-    lf = { "<cmd>JsonFormatLogs<CR>", "Format JSON" },
-    lv = { "<cmd>ViewPodLogs<CR>", "View Pod Logs" },
+    jf = { "<cmd>JsonFormatLogs<CR>", "Format JSON" },
+    jv = { "<cmd>ViewPodLogs<CR>", "View Pod Logs" },
   },
 }
 -- Register the Helm keybindings with a specific prefix
