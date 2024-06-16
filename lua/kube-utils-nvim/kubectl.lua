@@ -264,4 +264,95 @@ Kubectl.select_and_delete_namespace = function()
 	end)
 end
 
+local function fetch_pods(namespace)
+    -- Run the shell command to get pods in the given namespace
+    local pods, err = Command.run_shell_command("kubectl get pods -n " .. namespace .. " -o name")
+
+    -- Check if the command was successful
+    if not pods or pods == "" then
+        Utils.log_error(err or "Failed to fetch pods: Command returned no output.")
+        return nil
+    end
+
+    -- Split the pods into a list
+    local pod_list = vim.split(pods, "\n", { trimempty = true })
+
+    -- Check if the list is empty
+    if #pod_list == 0 then
+        Utils.log_error("No pods available.")
+        return nil
+    end
+
+    return pod_list
+end
+
+local function fetch_pod_logs(pod_name, namespace)
+    -- Run the shell command to get logs of the given pod
+    local logs, err = Command.run_shell_command("kubectl logs " .. pod_name .. " -n " .. namespace)
+
+    -- Check if the command was successful
+    if not logs or logs == "" then
+        Utils.log_error(err or "Failed to fetch logs: Command returned no output.")
+        return nil
+    end
+
+    return logs
+end
+
+Kubectl.view_pod_logs = function()
+    -- Step 1: Select a context
+    local context_list = fetch_contexts()
+    if not context_list then
+        return
+    end
+    TelescopePicker.select_from_list("Select Kubernetes Context", context_list, function(selected_context)
+        Command.run_shell_command("kubectl config use-context " .. selected_context)
+        -- Step 2: Select a namespace
+        local namespace_list = fetch_namespaces()
+        if not namespace_list then
+            return
+        end
+        TelescopePicker.select_from_list("Select Namespace", namespace_list, function(selected_namespace)
+            -- Step 3: Select a pod
+            local pod_list = fetch_pods(selected_namespace)
+            if not pod_list then
+                return
+            end
+            TelescopePicker.select_from_list("Select Pod", pod_list, function(selected_pod)
+                -- Step 4: Fetch the selected pod logs
+                local logs = fetch_pod_logs(selected_pod, selected_namespace)
+                if not logs then
+                    return
+                end
+
+                -- Function to safely rename buffer
+                local function safe_set_buf_name(buf, name)
+                    local ok, err = pcall(vim.api.nvim_buf_set_name, buf, name)
+                    if not ok then
+                        Utils.log_error("Failed to rename buffer: " .. err)
+                    end
+                end
+
+                -- Step 5: Open the logs in a new buffer with a vertical split and save it
+                vim.api.nvim_command("vsplit")
+                local buf = vim.api.nvim_create_buf(false, true)
+                vim.api.nvim_set_current_buf(buf)
+
+                -- Ensure the buffer can be written to
+                vim.bo[buf].buftype = ""
+
+                -- Set the split to take 70% of the width
+                local total_width = vim.o.columns
+                local split_width = math.floor(total_width * 0.6)
+                vim.api.nvim_win_set_width(0, split_width)
+
+                vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(logs, "\n"))
+                safe_set_buf_name(buf, selected_pod .. ".json")
+                vim.bo[buf].filetype = "json"
+            end)
+        end)
+    end)
+end
+
 return Kubectl
+
