@@ -96,6 +96,7 @@ end
 
 local function generate_helm_template(chart_directory)
 	-- Change the current working directory to the chart directory
+	---@diagnostic disable-next-line: undefined-field
 	local original_directory = vim.loop.cwd() or ""
 
 	-- Handle the case where original_directory is nil
@@ -104,12 +105,14 @@ local function generate_helm_template(chart_directory)
 		return "Error: Failed to get the current working directory"
 	end
 
+	---@diagnostic disable-next-line: undefined-field
 	vim.loop.chdir(chart_directory)
 
 	local helm_cmd = "helm template ."
 	local result, err = Command.run_shell_command(helm_cmd)
 
 	-- Change back to the original directory
+	---@diagnostic disable-next-line: undefined-field
 	vim.loop.chdir(original_directory)
 
 	if result and result ~= "" then

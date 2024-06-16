@@ -3,28 +3,17 @@
 local M = {}
 
 local module_patterns = {
-	-- Python modules with log level in square brackets
-	"%w+%.py%[%a+%]", -- e.g., "main.py[DEBUG]"
-	-- Generic module with numbers (e.g., CRON jobs, systemd, etc.)
-	"%a[%a%d._/-]+%[%d+%]", -- e.g., "CRON[329707]", "systemd-logind[1227]"
-	-- pam_unix specific pattern
-	"pam_unix%([^:]+%):", -- e.g., "pam_unix(sudo:session):"
-	-- General modules with log level in square brackets
-	"[%a_]+%.[%a_]+%[%a+%]", -- e.g., "util.py[DEBUG]"
-	-- Generic paths and modules with various separators
-	"%S+/%S+", -- e.g., "setup.version/version/version.go"
-	-- Modules with multiple components separated by colons
-	"[%w_.-]+:[%w_.-]+:[%w_.-]+", -- e.g., "module:function:label"
-	-- More general module patterns with log level
-	"[%a_][%a%d._-]*%[%a+%]", -- e.g., "module[DEBUG]"
-	-- PostgreSQL logs: include database and function names
-	"%w+%.%w+%[%w+%]", -- e.g., "database.function[CONTEXT]"
-	-- Go modules with file paths
-	"[%w_/]+%.go:%d+", -- e.g., "main.go:123"
-	-- Java logs with package and class names
-	"[%w$.]+%.java:%d+", -- e.g., "com.example.MyClass.java:45"
-	-- Generic modules with file extensions and line numbers
-	"[%w_/%.]+%.%a+:%d+", -- e.g., "path/to/file.ext:123"
+	"%w+%.py%[%a+%]", -- Python modules with log level in square brackets
+	"%a[%a%d._/-]+%[%d+%]", -- Generic module with numbers (e.g., CRON jobs, systemd, etc.)
+	"pam_unix%([^:]+%):", -- pam_unix specific pattern
+	"[%a_]+%.[%a_]+%[%a+%]", -- General modules with log level in square brackets
+	"%S+/%S+", -- Generic paths and modules with various separators
+	"[%w_.-]+:[%w_.-]+:[%w_.-]+", -- Modules with multiple components separated by colons
+	"[%a_][%a%d._-]*%[%a+%]", -- More general module patterns with log level
+	"%w+%.%w+%[%w+%]", -- PostgreSQL logs: include database and function names
+	"[%w_/]+%.go:%d+", -- Go modules with file paths
+	"[%w$.]+%.java:%d+", -- Java logs with package and class names
+	"[%w_/%.]+%.%a+:%d+", -- Generic modules with file extensions and line numbers
 }
 
 local timestamp_patterns = {
@@ -59,7 +48,7 @@ local function parseLogLevel(line)
 		{ level = "WARNING", pattern = "%[%s*warning%s*%]" },
 		{ level = "INFO", pattern = "%[%s*info%s*%]" },
 		{ level = "DEBUG", pattern = "%[%s*debug%s*%]" },
-		{ level = "LEVEL", pattern = "level%((%-?%d+)%)" }, -- Adjusted pattern for LEVEL(-n)
+		{ level = "LEVEL", pattern = "level%((%-?%d+)%)" },
 	}
 	local lower_line = line:lower()
 	for _, log_level in ipairs(log_level_patterns) do
