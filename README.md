@@ -17,10 +17,16 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 
 #### Screenshots
 Here are some visual previews of the plugin in action:
+Telescope NS selector :
 - ![Screenshot 1](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/bbfe3a51-6117-413f-9d31-9f66517994c2)
+K9S module:
 - ![Screenshot 2](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/c6139ddf-e9af-4665-bd57-a829b236bac2)
+K9S in a vertical split view :
 - ![Screenshot 3](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/8c3cbaf8-d3c0-44a8-b487-4858e06b86f7)
+Get CRD function :
 - ![Screenshot 4](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/b5c1158e-5c93-41aa-b9ee-6fa5e2d0cb2b)
+Get Log and FormatJson :
+- ![image](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/d422e85c-aa25-45a2-8692-a371b8de763e)
 
 ## Installation
 
