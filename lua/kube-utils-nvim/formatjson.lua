@@ -2,6 +2,7 @@
 
 local M = {}
 
+-- TODO: Add more patterns for various log formats
 local module_patterns = {
 	"%w+%.py%[%a+%]", -- Python modules with log level in square brackets
 	"%a[%a%d._/-]+%[%d+%]", -- Generic module with numbers (e.g., CRON jobs, systemd, etc.)

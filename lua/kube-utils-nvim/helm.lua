@@ -96,6 +96,7 @@ end
 
 local function generate_helm_template(chart_directory)
 	-- Change the current working directory to the chart directory
+	--  TODO: Fix the issue with the undefined-field diagnostic
 	---@diagnostic disable-next-line: undefined-field
 	local original_directory = vim.loop.cwd() or ""
 
@@ -105,6 +106,7 @@ local function generate_helm_template(chart_directory)
 		return "Error: Failed to get the current working directory"
 	end
 
+	-- TODO: Fix the issue with the undefined-field diagnostic
 	---@diagnostic disable-next-line: undefined-field
 	vim.loop.chdir(chart_directory)
 
@@ -112,6 +114,7 @@ local function generate_helm_template(chart_directory)
 	local result, err = Command.run_shell_command(helm_cmd)
 
 	-- Change back to the original directory
+	-- TODO: Fix the issue with the undefined-field diagnostic
 	---@diagnostic disable-next-line: undefined-field
 	vim.loop.chdir(original_directory)
 
