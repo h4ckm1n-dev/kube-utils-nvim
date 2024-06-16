@@ -6,13 +6,14 @@ For the lazy, you can install my full config lazyvim with kube-utils-nvim instal
 
 This Neovim plugin provides seamless integration with Kubernetes and Helm, allowing you to deploy and manage Kubernetes resources directly from your editor.
 
-### Key Features:
-- **K9s Integration**: Remap `ctl+c` in k9s mode to exit insert mode.
-- **Helm Commands**: Directly deploy, update, or remove Helm charts from within Neovim.
-- **Kubectl Commands**: Apply Kubernetes configurations directly from your buffer.
-- **CRD Management**: Easily fetch and view Custom Resource Definitions.
-- **Log Formatting**: Automatically format JSON Kubernetes logs for clarity.
-- **Telescope Integration**: Use Telescope for enhanced navigation and selection within Kubernetes environments.
+## Features
+- **Kubernetes Context and Namespace Management**: Easily switch between different Kubernetes contexts and namespaces.
+- **CRD Viewer:** View Custom Resource Definitions directly in Neovim.
+- **Helm Integration:** Manage Helm charts, update dependencies, and deploy directly from Neovim.
+- **Log Formatting:** Transform Kubernetes log files into a more readable JSON format.
+- **Telescope Integration:** Utilize Telescope for picking Kubernetes contexts, namespaces, and viewing Helm releases.
+- **LSP Integration:** Toggle YAML and Helm LSP settings based on the context within Neovim.
+- **K9s Integration:** Open k9s from nvim
 
 #### Screenshots
 Here are some visual previews of the plugin in action:
