@@ -27,7 +27,8 @@ K9S in a vertical split view :
 Get CRD function :
 - ![Screenshot 4](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/b5c1158e-5c93-41aa-b9ee-6fa5e2d0cb2b)
 Get Log and FormatJson :
-- ![image](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/d422e85c-aa25-45a2-8692-a371b8de763e)
+- ![image](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/52c7ecc8-9bb7-4dc0-a0cb-8e886d4ce645)
+
 
 ## Installation
 
