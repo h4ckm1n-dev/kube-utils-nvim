@@ -265,94 +265,108 @@ Kubectl.select_and_delete_namespace = function()
 end
 
 local function fetch_pods(namespace)
-    -- Run the shell command to get pods in the given namespace
-    local pods, err = Command.run_shell_command("kubectl get pods -n " .. namespace .. " -o name")
+	-- Run the shell command to get pods in the given namespace
+	local pods, err = Command.run_shell_command("kubectl get pods -n " .. namespace .. " -o name")
 
-    -- Check if the command was successful
-    if not pods or pods == "" then
-        Utils.log_error(err or "Failed to fetch pods: Command returned no output.")
-        return nil
-    end
+	-- Check if the command was successful
+	if not pods or pods == "" then
+		Utils.log_error(err or "Failed to fetch pods: Command returned no output.")
+		return nil
+	end
 
-    -- Split the pods into a list
-    local pod_list = vim.split(pods, "\n", { trimempty = true })
+	-- Split the pods into a list
+	local pod_list = vim.split(pods, "\n", { trimempty = true })
 
-    -- Check if the list is empty
-    if #pod_list == 0 then
-        Utils.log_error("No pods available.")
-        return nil
-    end
+	-- Check if the list is empty
+	if #pod_list == 0 then
+		Utils.log_error("No pods available.")
+		return nil
+	end
 
-    return pod_list
+	return pod_list
 end
 
 local function fetch_pod_logs(pod_name, namespace)
-    -- Run the shell command to get logs of the given pod
-    local logs, err = Command.run_shell_command("kubectl logs " .. pod_name .. " -n " .. namespace)
+	-- Fetch current logs
+	local current_logs, current_err = Command.run_shell_command("kubectl logs " .. pod_name .. " -n " .. namespace)
+	if not current_logs or current_logs == "" then
+		Utils.log_error(current_err or "Failed to fetch current logs: Command returned no output.")
+	end
 
-    -- Check if the command was successful
-    if not logs or logs == "" then
-        Utils.log_error(err or "Failed to fetch logs: Command returned no output.")
-        return nil
-    end
+	-- Fetch previous logs if the pod has restarted
+	local previous_logs, previous_err =
+		Command.run_shell_command("kubectl logs " .. pod_name .. " -n " .. namespace .. " --previous")
+	if not previous_logs or previous_logs == "" then
+		if previous_err and not string.find(previous_err, "previous terminated container") then
+			Utils.log_error(previous_err or "Failed to fetch previous logs: No previous containers.")
+		end
+	end
 
-    return logs
+	-- Combine logs if both are available, else return what is available
+	if current_logs and previous_logs then
+		return previous_logs .. "\n-- Current Logs --\n" .. current_logs
+	elseif current_logs then
+		return current_logs
+	elseif previous_logs then
+		return previous_logs
+	end
+
+	return nil
 end
 
 Kubectl.view_pod_logs = function()
-    -- Step 1: Select a context
-    local context_list = fetch_contexts()
-    if not context_list then
-        return
-    end
-    TelescopePicker.select_from_list("Select Kubernetes Context", context_list, function(selected_context)
-        Command.run_shell_command("kubectl config use-context " .. selected_context)
-        -- Step 2: Select a namespace
-        local namespace_list = fetch_namespaces()
-        if not namespace_list then
-            return
-        end
-        TelescopePicker.select_from_list("Select Namespace", namespace_list, function(selected_namespace)
-            -- Step 3: Select a pod
-            local pod_list = fetch_pods(selected_namespace)
-            if not pod_list then
-                return
-            end
-            TelescopePicker.select_from_list("Select Pod", pod_list, function(selected_pod)
-                -- Step 4: Fetch the selected pod logs
-                local logs = fetch_pod_logs(selected_pod, selected_namespace)
-                if not logs then
-                    return
-                end
+	-- Step 1: Select a context
+	local context_list = fetch_contexts()
+	if not context_list then
+		return
+	end
+	TelescopePicker.select_from_list("Select Kubernetes Context", context_list, function(selected_context)
+		Command.run_shell_command("kubectl config use-context " .. selected_context)
+		-- Step 2: Select a namespace
+		local namespace_list = fetch_namespaces()
+		if not namespace_list then
+			return
+		end
+		TelescopePicker.select_from_list("Select Namespace", namespace_list, function(selected_namespace)
+			-- Step 3: Select a pod
+			local pod_list = fetch_pods(selected_namespace)
+			if not pod_list then
+				return
+			end
+			TelescopePicker.select_from_list("Select Pod", pod_list, function(selected_pod)
+				-- Step 4: Fetch the selected pod logs
+				local logs = fetch_pod_logs(selected_pod, selected_namespace)
+				if not logs then
+					return
+				end
 
-                -- Function to safely rename buffer
-                local function safe_set_buf_name(buf, name)
-                    local ok, err = pcall(vim.api.nvim_buf_set_name, buf, name)
-                    if not ok then
-                        Utils.log_error("Failed to rename buffer: " .. err)
-                    end
-                end
+				-- Function to safely rename buffer
+				local function safe_set_buf_name(buf, name)
+					local ok, err = pcall(vim.api.nvim_buf_set_name, buf, name)
+					if not ok then
+						Utils.log_error("Failed to rename buffer: " .. err)
+					end
+				end
 
-                -- Step 5: Open the logs in a new buffer with a vertical split and save it
-                vim.api.nvim_command("vsplit")
-                local buf = vim.api.nvim_create_buf(false, true)
-                vim.api.nvim_set_current_buf(buf)
+				-- Step 5: Open the logs in a new buffer with a vertical split and save it
+				vim.api.nvim_command("vsplit")
+				local buf = vim.api.nvim_create_buf(false, true)
+				vim.api.nvim_set_current_buf(buf)
 
-                -- Ensure the buffer can be written to
-                vim.bo[buf].buftype = ""
+				-- Ensure the buffer can be written to
+				vim.bo[buf].buftype = ""
 
-                -- Set the split to take 70% of the width
-                local total_width = vim.o.columns
-                local split_width = math.floor(total_width * 0.6)
-                vim.api.nvim_win_set_width(0, split_width)
+				-- Set the split to take 70% of the width
+				local total_width = vim.o.columns
+				local split_width = math.floor(total_width * 0.6)
+				vim.api.nvim_win_set_width(0, split_width)
 
-                vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(logs, "\n"))
-                safe_set_buf_name(buf, selected_pod .. ".json")
-                vim.bo[buf].filetype = "json"
-            end)
-        end)
-    end)
+				vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(logs, "\n"))
+				safe_set_buf_name(buf, selected_pod .. ".json")
+				vim.bo[buf].filetype = "json"
+			end)
+		end)
+	end)
 end
 
 return Kubectl
-
