@@ -10,7 +10,7 @@ This Neovim plugin provides seamless integration with Kubernetes and Helm, allow
 - **Kubernetes Context and Namespace Management**: Easily switch between different Kubernetes contexts and namespaces.
 - **CRD Viewer:** View Custom Resource Definitions directly in Neovim.
 - **Helm Integration:** Manage Helm charts, update dependencies, and deploy directly from Neovim.
-- **Log Formatting:** Transform Kubernetes log files into a more readable JSON format.
+- **Log Viewer and Formatting:** Transform Kubernetes log files into a more readable JSON format.
 - **Telescope Integration:** Utilize Telescope for picking Kubernetes contexts, namespaces, and viewing Helm releases.
 - **LSP Integration:** Toggle YAML and Helm LSP settings based on the context within Neovim.
 - **K9s Integration:** Open k9s from nvim
