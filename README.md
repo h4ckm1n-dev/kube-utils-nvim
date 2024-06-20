@@ -31,12 +31,6 @@ Get Log and FormatJson :
 
 ![Capture Video Preview](https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/d575048c-2f88-415a-a62f-90db935d6951)
 
-<video width="100%" controls>
-  <source src="https://github.com/h4ckm1n-dev/kube-utils-nvim/assets/97511408/d575048c-2f88-415a-a62f-90db935d6951" type="video/webm">
-  Your browser does not support the video tag.
-</video>
-
-
 ## Installation
 
 Install the plugin using your preferred Neovim package manager. Example for `lazy.nvim`:
