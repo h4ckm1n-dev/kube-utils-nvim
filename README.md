@@ -87,7 +87,7 @@ local helm_mappings = {
 }
 
 -- Register the Helm keybindings with a specific prefix
-require('which-key').register(helm_mappings, { prefix = "<leader>" })
+require('which-key').add(helm_mappings, { prefix = "<leader>" })
 ```
 ## Requirements
 
