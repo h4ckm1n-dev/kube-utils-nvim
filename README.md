@@ -79,7 +79,7 @@ local kube_utils_mappings = {
   { "<leader>kl", group = "Logs" },
   { "<leader>klf", "<cmd>JsonFormatLogs<CR>", desc = "Format JSON" },
   { "<leader>klv", "<cmd>ViewPodLogs<CR>", desc = "View Pod Logs" },
-
+}
 -- Register the Kube Utils keybindings
 require('which-key').add(kube_utils_mappings)
 ```
