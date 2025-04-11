@@ -56,6 +56,7 @@ return {
 Use the following mappings to access Kubernetes features efficiently:
 
 ```lua
+-- ~/.config/nvim/lua/config/keymaps.lua
 local kube_utils_mappings = {
   { "<leader>k", group = "Kubernetes" }, -- Main title for all Kubernetes related commands
   -- Helm Commands
