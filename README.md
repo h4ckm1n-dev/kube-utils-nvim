@@ -56,6 +56,7 @@ return {
 Use the following mappings to access Kubernetes features efficiently:
 
 ```lua
+-- ~/.config/nvim/lua/config/keymaps.lua
 local kube_utils_mappings = {
   { "<leader>k", group = "Kubernetes" }, -- Main title for all Kubernetes related commands
   -- Helm Commands
@@ -79,7 +80,7 @@ local kube_utils_mappings = {
   { "<leader>kl", group = "Logs" },
   { "<leader>klf", "<cmd>JsonFormatLogs<CR>", desc = "Format JSON" },
   { "<leader>klv", "<cmd>ViewPodLogs<CR>", desc = "View Pod Logs" },
-
+}
 -- Register the Kube Utils keybindings
 require('which-key').add(kube_utils_mappings)
 ```
